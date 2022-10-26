@@ -1,0 +1,48 @@
+{
+  "name": "featbit-js-client-sdk",
+  "version": "1.0.0",
+  "description": "https://github.com/featbit/featbit-js-client-sdk",
+  "main": "esm/featbit.js",
+  "scripts": {
+    "watch-esm": "rimraf esm && tsc --watch",
+    "watch-umd": "rimraf umd && webpack --watch --mode development",
+    "build": "rimraf umd && rimraf esm && tsc && webpack --mode production",
+    "prepublishOnly": "npm run build",
+    "lint": "gts lint",
+    "clean": "gts clean",
+    "compile": "tsc",
+    "fix": "gts fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/featbit/featbit-js-client-sdk.git"
+  },
+  "keywords": [
+    "featbit",
+    "feature flags",
+    "feature management"
+  ],
+  "author": "featbit.co",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/featbit/featbit-js-client-sdk/issues"
+  },
+  "homepage": "https://github.com/featbit/featbit-js-client-sdk#readme",
+  "files": [
+    "/esm",
+    "/umd",
+    "/src"
+  ],
+  "devDependencies": {
+    "gts": "^3.1.0",
+    "rimraf": "^3.0.2",
+    "ts-loader": "^9.2.6",
+    "tslint": "^6.1.3",
+    "typescript": "^4.5.5",
+    "webpack": "^5.67.0",
+    "webpack-cli": "^4.9.2"
+  },
+  "dependencies": {
+    "string-replace-loader": "^3.1.0"
+  }
+}

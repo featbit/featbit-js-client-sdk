@@ -1,0 +1,31 @@
+1. create typescript project: https://www.digitalocean.com/community/tutorials/typescript-new-project
+
+_bundles/		// UMD bundles
+lib/			// ES5(commonjs) + source + .d.ts
+lib-esm/		// ES5(esmodule) + source + .d.ts
+
+2. publish
+    2.1 npm login
+    2.2 npm publish --access public
+
+3. Ref
+    pageview: https://dev.to/zigabrencic/analytics-with-vanilla-js-page-views-47pb
+
+4. Ant Design Pro
+ 13552586056  密碼 任意
+
+ dev
+ http://localhost:8000/user/login?envkey=YjRlLWY1YjEtNCUyMDIxMDYwNzA2NTYwOF9fMl9fM19fN19fZGVmYXVsdF84NDNlMw==
+
+demo
+ http://localhost:8000/user/login?envkey=OTNlLTYyM2UtNCUyMDIxMTAxOTA4NDYxMF9fMl9fM19fMjM0X19kZWZhdWx0XzRhMjE1
+
+ for error: 'this' implicitly has type 'any' because it does not have a type annotation
+ ref: https://www.valentinog.com/blog/this/
+const button = document.querySelector("button");
+button?.addEventListener("click", handleClick);
+
+function handleClick(this: HTMLElement) {
+    console.log("Clicked!");
+    this.removeEventListener("click", handleClick);
+}
