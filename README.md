@@ -38,13 +38,13 @@ yarn add featbit-js-client-sdk
 To import the SDK:
 ```javascript
 // Using ES2015 imports
-import Featbit from 'featbit-js-client-sdk';
+import fbClient from 'featbit-js-client-sdk';
 
 // Using TypeScript imports
-import Featbit from 'featbit-js-client-sdk';
+import fbClient from 'featbit-js-client-sdk';
 
 // Using react imports
-import Featbit from 'featbit-js-client-sdk';
+import fbClient from 'featbit-js-client-sdk';
 ```
 
 If using typescript and seeing the following error:
