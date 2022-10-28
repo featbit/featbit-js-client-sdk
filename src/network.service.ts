@@ -163,8 +163,8 @@ class NetworkService {
           sendToExperiment: v.sendToExperiment,
           timestamp: v.timestamp,
           variation: {
-            localId: v.variation!.id,
-            variationValue: v.variation!.value
+            id: v.variation!.id,
+            value: v.variation!.value
           }
         })),
         metrics: data.filter(d => d.insightType !== InsightType.featureFlagUsage).map(d => ({

@@ -2,7 +2,7 @@ import { uuid } from "./utils";
 
 const API_CALL_RESULTS : {[key: string]: string} = {};
 const FOOT_PRINTS: string[] = [];
-let _throttleWait: number = 5 * 60 * 1000; // millionseconds
+let _throttleWait: number =  0; // send immediately
 
 class ThrottleUtil {
     private _key: string;

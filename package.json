@@ -1,6 +1,6 @@
 {
   "name": "featbit-js-client-sdk",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "https://github.com/featbit/featbit-js-client-sdk",
   "main": "esm/featbit.js",
   "scripts": {
