@@ -102,7 +102,11 @@ export function validateOption(option: IOption): string | null {
     return 'option is mandatory';
   }
 
-  const { secret, anonymous, user, enableDataSync } = option;
+  const { api, secret, anonymous, user, enableDataSync } = option;
+
+  if (enableDataSync && (api === undefined || api === null || api.trim() === '')) {
+    return 'api is mandatory in option';
+  }
 
   if (enableDataSync && (secret === undefined || secret === null || secret.trim() === '')) {
     return 'secret is mandatory in option';

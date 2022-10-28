@@ -65,7 +65,7 @@ export class FB {
   private _featureFlagEvaluationBuffer: Queue<IFeatureFlagVariationBuffer> = new Queue<IFeatureFlagVariationBuffer>();
   private _option: IOption = {
     secret: '',
-    api: 'https://api.featureflag.co',
+    api: '',
     devModePassword: '',
     enableDataSync: true,
     appType: 'javascript'

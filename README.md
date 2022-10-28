@@ -79,7 +79,7 @@ The complete list of the available parameters in option:
 - **bootstrap**: init the SDK with feature flags, this will trigger the ready event immediately instead of requesting from the remote. **not mandatory**
 - **enableDataSync**: false if you do not want to sync data with remote server, in this case feature flags must be set to **bootstrap** option or be passed to the method **bootstrap**. The default value is true. **not mandatory** 
 - **devModePassword**: if set, the developer mode is enabled, and it must be activated by calling the method **activateDevMode** with password on Ffc . **not mandatory** 
-- **api**: the API url of the server, set it only if you are self-hosting the back-end. **not mandatory**
+- **api**: the remote server URL. **mandatory**
 - **appType**: the app type, the default value is javascript, **not mandatory**
 - **user**: the user connected to your APP, can be ignored if **anonymous** equals to true. 
   - **name**: the user-friendly name, useful when viewing users in the portal. **mandatory**

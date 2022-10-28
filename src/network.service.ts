@@ -158,8 +158,8 @@ class NetworkService {
     try {
       const payload = [{
         user: this.__getUserInfo(),
-        userVariations: data.filter(d => d.insightType === InsightType.featureFlagUsage).map(v => ({
-          featureFlagKeyName: v.id,
+        variations: data.filter(d => d.insightType === InsightType.featureFlagUsage).map(v => ({
+          featureFlagKey: v.id,
           sendToExperiment: v.sendToExperiment,
           timestamp: v.timestamp,
           variation: {
@@ -176,7 +176,7 @@ class NetworkService {
         }))
       }];
   
-      await post(`${this.api}/api/public/track`, payload, { Authorization: this.secret });
+      await post(`${this.api}/api/public/insight/track`, payload, { Authorization: this.secret });
     } catch (err) {
       logger.logDebug(err);
     }
