@@ -169,6 +169,7 @@ class NetworkService {
         })),
         metrics: data.filter(d => d.insightType !== InsightType.featureFlagUsage).map(d => ({
           route: location.pathname,
+          timestamp: d.timestamp,
           numericValue: d.numericValue === null || d.numericValue === undefined? 1 : d.numericValue,
           appType: this.appType,
           eventName: d.eventName,

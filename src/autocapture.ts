@@ -58,6 +58,7 @@ class AutoCapture {
     if (!!pageViewSetting) {
       eventHub.emit(insightsTopic, {
         insightType: InsightType.pageView,
+        timestamp: Date.now(),
         type: 'PageView',
         route: window.location.href,
         eventName: pageViewSetting.eventName
@@ -71,6 +72,7 @@ class AutoCapture {
       if (!!pageViewSetting) {
         eventHub.emit(insightsTopic, {
           insightType: InsightType.pageView,
+          timestamp: Date.now(),
           type: 'PageView',
           route: window.location.href,
           eventName: pageViewSetting.eventName
@@ -107,6 +109,7 @@ class AutoCapture {
     
       eventHub.emit(insightsTopic, {
         insightType: InsightType.click,
+        timestamp: Date.now(),
         type: 'Click',
         route: window.location.href,
         eventName: target.datafbeventname

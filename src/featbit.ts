@@ -306,6 +306,7 @@ export class FB {
   sendCustomEvent(data: ICustomEvent[]): void {
     (data || []).forEach(d => this._insightsQueue.add({
       insightType: InsightType.customEvent,
+      timestamp: Date.now(),
       type: 'CustomEvent',
       ...d
     }))
