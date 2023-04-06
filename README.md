@@ -1,49 +1,22 @@
-# JavaScript client side SDK
-
+# FeatBit Client-Side SDK for JavaScript
 
 ## Introduction
-This is the JavaScript client side SDK for the feature management platform Featbit. We will document all the methods available in this SDK, and detail how they work.
 
-Be aware, this is a client side SDK, it is intended for use in a single-user context, which can be mobile, desktop or embedded applications. This SDK can only be ran in a browser environment, it is not suitable for NodeJs applications, server side SDKs are available in our other repos.
+This is the client side SDK for the feature management platform [FeatBit](https://github.com/featbit/featbit). We will document all the methods available in this SDK, and detail how they work.
 
-This SDK has two main works:
-- Makes feature flags available to the client side code
-- Sends feature flags usage, click, pageview and custom events for the insights and A/B/n testing.
+Be aware, this is a client side SDK, it is intended for use in a single-user context, which can be mobile, desktop or embedded applications. This SDK can only be ran in a browser environment, it is not suitable for NodeJs applications.
 
-## Data synchonization
-We use websocket to make the local data synchronized with the server, and then persist in localStorage. Whenever there is any changes to a feature flag, the changes would be pushed to the SDK, the average synchronization time is less than **100** ms. Be aware the websocket connection can be interrupted by any error or internet interruption, but it would be restored automatically right after the problem is gone.
+## Get Started
 
-## Offline mode support
-As all data is stored locally in the localStorage, in the following situations, the SDK would still work when there is temporarily no internet connection:
-- it has already received the data from previous connections
-- the Ffc.bootstrap(featureFlags) method is called with all necessary feature flags
+### Installation
 
-In the meantime, the SDK would try to reconnect to the server by an incremental interval, this makes sure that the websocket would be restored when the internet connection is back.
-
-## Evaluation of a feature flag
-After initialization, the SDK has all the feature flags locally and it does not need to request the remote server for any feature flag evaluation. All evaluation is done locally and synchronously, the average evaluation time is about **1** ms.
-
-## Getting started
-### Install
 npm
-  ```
-  npm install featbit-js-client-sdk
-  ```
-
-yarn
-```
-yarn add featbit-js-client-sdk
+```bash
+npm install featbit-js-client-sdk
 ```
 
 To import the SDK:
 ```javascript
-// Using ES2015 imports
-import fbClient from 'featbit-js-client-sdk';
-
-// Using TypeScript imports
-import fbClient from 'featbit-js-client-sdk';
-
-// Using react imports
 import fbClient from 'featbit-js-client-sdk';
 ```
 
@@ -58,15 +31,55 @@ just add this in your tsconfig.json file
   },
 ```
 
-### Initializing the SDK
-Before initializing the SDK, you need to get the client-side env secret of your environment from our SaaS platform.
+### Quick Start
+
+The following code demonstrates:
+1. initializing the SDK;
+2. how to get flag variation of a flag;
+3. Subscribe to flag change;
 
 ```javascript
 const option = {
-  secret: 'your env secret',
+  secret: "your env secret",
   user: {
-    name: 'the user's user name',
-    keyId: 'the user's unique identifier'
+    name: "the user's user name",
+    keyId: "the user's unique identifier"
+  }
+};
+
+// initialization
+fbClient.init(option);
+
+// evaluation
+const flagValue = fbClient.variation("YOUR_FEATURE_KEY", defaultValue);
+
+// subscribe to flag change
+fbClient.on('ff_update:YOUR_FEATURE_KEY', (change) => {
+  // change has this structure {id: 'the feature_flag_key', oldValue: theOldValue, newValue: theNewValue }
+  // the type of theOldValue and theNewValue is defined on FeatBit
+
+  // defaultValue should have the same type as theOldValue and theNewValue
+  const myFeature = fbClient.variation('YOUR_FEATURE_KEY', defaultValue);
+});
+```
+
+## Examples
+
+- [Vue](https://github.com/featbit/featbit-samples/tree/main/samples/dino-game/interactive-demo-vue)
+- [React](https://github.com/featbit/featbit-samples/tree/main/samples/dino-game/interactive-demo-react)
+
+## SDK
+
+### Initialization
+
+Before initializing the SDK, you need to get the client-side env secret of your environment from FeatBit.
+
+```javascript
+const option = {
+  secret: "your env secret",
+  user: {
+    name: "the user's user name",
+    keyId: "the user's unique identifier"
   }
 };
 
@@ -77,15 +90,15 @@ The complete list of the available parameters in option:
 - **secret**: the client side secret of your environment. **mandatory** (NB. this becomes optional if enableDataSync equals false)
 - **anonymous**: true if you want to use a anonymous user, which is the case before user login to your APP. If that is your case, the user can be set later with the **identify** method after the user has logged in. The default value is false. **not mandatory**
 - **bootstrap**: init the SDK with feature flags, this will trigger the ready event immediately instead of requesting from the remote. **not mandatory**
-- **enableDataSync**: false if you do not want to sync data with remote server, in this case feature flags must be set to **bootstrap** option or be passed to the method **bootstrap**. The default value is true. **not mandatory** 
-- **devModePassword**: if set, the developer mode is enabled, and it must be activated by calling the method **activateDevMode** with password on Ffc . **not mandatory** 
+- **enableDataSync**: false if you do not want to sync data with remote server, in this case feature flags must be set to **bootstrap** option or be passed to the method **bootstrap**. The default value is true. **not mandatory**
+- **devModePassword**: if set, the developer mode is enabled, and it must be activated by calling the method **activateDevMode** with password on Ffc . **not mandatory**
 - **api**: the remote server URL. **mandatory**
 - **appType**: the app type, the default value is javascript, **not mandatory**
-- **user**: the user connected to your APP, can be ignored if **anonymous** equals to true. 
+- **user**: the user connected to your APP, can be ignored if **anonymous** equals to true.
   - **name**: the user-friendly name, useful when viewing users in the portal. **mandatory**
   - **keyId**: the unique user identifier. **mandatory**
   - **customizedProperties**: any customized properties you want to send to the back end. It is extremely powerful when you define targeting rules or segments. **not mandatory**
-     - it must have the following format:
+    - it must have the following format:
      ```json
       [{
         "name": "the name of the property",
@@ -93,17 +106,13 @@ The complete list of the available parameters in option:
       }]
      ```
 
-#### Initialization delay
-Initializing the client makes a remote request to the server, so it may take 100 milliseconds or more before the SDK emits the ready event. If you require feature flag values before rendering the page, we recommend bootstrapping the client. If you bootstrap the client, it will emit the ready event immediately.
-
-### Get the varation value of a feature flag
-Two methods to get the variation of a feature flag
+### Evaluation
 
 ```javascript
 // Use this method for all cases
-// This method supports type inspection, it returns the value with the type defined on remote,
-// so defaultValue should have the same type as defined on remote
-var flagValue = fbClient.variation("YOUR_FEATURE_KEY", defaultValue);
+// This method supports type inspection, it returns the value with the type defined on FeatBit,
+// so defaultValue should have the same type as defined on FeatBit
+const flagValue = fbClient.variation("YOUR_FEATURE_KEY", defaultValue);
 ```
 
 ### Developer mode
@@ -135,7 +144,7 @@ fbClient.quitDevMode();
 window.quitFeatbitDevMode();
 ```
 
-### bootstrap
+### Bootstrap
 If you already have the feature flags available, two ways to pass them to the SDK instead of requesting from the remote.
 - By the **init** method
 
@@ -218,15 +227,17 @@ We can manully call the method logout, which will switch the current user back t
   fbClient.logout(user);
 ```
 
-### Subscribe to the changes of feature flag(s)
+### Subscribe to feature flag(s) changes
+
 To get notified when a feature flag is changed, we offer two methods
 - subscribe to the changes of any feature flag(s)
 
 ```javascript
 fbClient.on('ff_update', (changes) => {
   // changes has this structure [{id: 'the feature_flag_key', oldValue: theOldValue, newValue: theNewValue }]
-  // theOldValue and theNewValue have the type as defined on remote
-...
+  // the type of theOldValue and theNewValue is defined on FeatBit
+  
+  // do something when any feature flag changes
 });
 
 ```
@@ -236,16 +247,33 @@ fbClient.on('ff_update', (changes) => {
 // replace feature_flag_key with your feature flag key
 fbClient.on('ff_update:feature_flag_key', (change) => {
   // change has this structure {id: 'the feature_flag_key', oldValue: theOldValue, newValue: theNewValue }
-  // theOldValue and theNewValue have the type as defined on remote
+  // the type of theOldValue and theNewValue is defined on FeatBit
 
-  // defaultValue should have the type as defined on remote
+  // defaultValue should have the same type as theOldValue and theNewValue
+  // this is the prefered way than calling change.newValue as each time you call fbClient.variation,
+  // the insight data is sent to server automatically
   const myFeature = fbClient.variation('feature_flag_key', defaultValue);
-...
 });
 
 ```
 
-## Experiments (A/B/n Testing)
+### Data synchronization
+
+We use websocket to make the local data synchronized with the server, and then store them in memory by default. Whenever there is any change to a feature flag or its related data, this change will be pushed to the SDK, the average synchronization time is less than 100ms. Be aware the websocket connection may be interrupted due to internet outage, but it will be resumed automatically once the problem is gone.
+
+### Offline mode support
+
+As all data is stored locally in the localStorage, in the following situations, the SDK would still work when there is temporarily no internet connection:
+- it has already received the data from previous connections
+- the Ffc.bootstrap(featureFlags) method is called with all necessary feature flags
+
+In the meantime, the SDK would try to reconnect to the server by an incremental interval, this makes sure that the websocket would be restored when the internet connection is back.
+
+### Evaluation of a feature flag
+After initialization, the SDK has all the feature flags locally and it does not need to request the remote server for any feature flag evaluation. All evaluation is done locally and synchronously, the average evaluation time is about **1** ms.
+
+### Experiments (A/B/n Testing)
+
 We support automatic experiments for pageviews and clicks, you just need to set your experiment on our SaaS platform, then you should be able to see the result in near real time after the experiment is started.
 
 In case you need more control over the experiment data sent to our server, we offer a method to send custom event.
@@ -260,4 +288,11 @@ fbClient.sendCustomEvent([{
 
 Make sure sendCustomEvent is called after the related feature flag is called by simply calling **Ffc.variation('featureFlagKeyName', 'default value')**, otherwise, the custom event won't be included into the experiment result.
 
+## Getting support
 
+- If you have a specific question about using this SDK, we encourage you to ask it in our slack channel.
+- If you encounter a bug or would like to request a feature, [submit an issue](https://github.com/featbit/featbit-js-client-sdk/issues).
+
+## See Also
+
+- [FeatBit in 3 minutes](https://docs.featbit.co/docs/getting-started/1.-featbit-in-3-minutes)
