@@ -106,7 +106,7 @@ This table lists all available options
 | enableDataSync        | `true`                  | Set to false if you do not want to sync data with remote server, in this case feature flags must be set to bootstrap option or be passed to the method bootstrap.                                       |
 | bootstrap             | `[ ]`                   | Init the SDK with feature flags, this will trigger the ready event immediately instead of requesting from the remote.                                                                                   |
 | api                   | `http://localhost:5100` | The remote server URL.                                                                                                                                                                                  |
-| appType               | `javascript`            | The app type, the default value is javascript.                                                                                                                                                          |
+| appType               | `javascript`            | The app type.                                                                                                                                                          |
 | devModePassword       | `''`                    | If set, the developer mode is enabled, and it must be activated by calling the method activateDevMode with password on fbClient.                                                                        |
 
 ### Bootstrap
