@@ -167,7 +167,7 @@ const flagValue = fbClient.variation("YOUR_FEATURE_KEY", defaultValue);
 
 To find out when the client is ready, you can use one of two mechanisms: events or promises.
 
-The client object can emit JavaScript events. It emits a ready event when it receives initial flag values from feature-flags.co. You can listen for this event to determine when the client is ready to evaluate flags.
+The client object can emit JavaScript events. It emits a ready event when it receives initial flag values from the server. You can listen for this event to determine when the client is ready to evaluate flags.
 
 ```javascript
 fbClient.on('ready', (data) => {
@@ -246,7 +246,7 @@ To activate the developer mode, the activateDevMode method should be called as f
 fbClient.activateFeatbitDevMode('PASSWORD');
 
 // or
-// this method is equivalent to Ffc.activateDevMode('PASSWORD')
+// this method is equivalent to fbClient.activateDevMode('PASSWORD')
 window.activateFeatbitDevMode('PASSWORD'); 
 ```
 
@@ -260,7 +260,7 @@ fbClient.openDevModeEditor();
 fbClient.quitDevMode();
 
 // or
-// this is equivalent to Ffc.quitDevMode()
+// this is equivalent to fbClient.quitDevMode()
 window.quitFeatbitDevMode();
 ```
 
@@ -272,7 +272,7 @@ We use websocket to make the local data synchronized with the server, and then s
 
 As all data is stored locally in the localStorage, in the following situations, the SDK would still work when there is temporarily no internet connection:
 - it has already received the data from previous connections
-- the Ffc.bootstrap(featureFlags) method is called with all necessary feature flags
+- the fbClient.bootstrap(featureFlags) method is called with all necessary feature flags
 
 In the meantime, the SDK would try to reconnect to the server by an incremental interval, this makes sure that the websocket would be restored when the internet connection is back.
 
@@ -292,7 +292,7 @@ fbClient.sendCustomEvent([{
 
 **numericValue** is not mandatory, the default value is **1**.
 
-Make sure sendCustomEvent is called after the related feature flag is called by simply calling **Ffc.variation('featureFlagKeyName', 'default value')**, otherwise, the custom event won't be included into the experiment result.
+Make sure sendCustomEvent is called after the related feature flag is called by simply calling **fbClient.variation('featureFlagKeyName', 'default value')**, otherwise, the custom event won't be included into the experiment result.
 
 ## Getting support
 
