@@ -98,16 +98,16 @@ The user has three properties:
 
 This table lists all available options
 
-| Options               | Defaults                | Description                                                                                                                                                                                              |
-|-----------------------|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| secret (**required**) | -                       | The client side secret of your environment.                                                                                                                                                              |
-| user   (**required**) | -                       | The user connected to your APP, can be ignored if anonymous equals to true.                                                                                                                              |
+| Options               | Defaults                | Description                                                                                                                                                                                          |
+|-----------------------|-------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| secret (**required**) | -                       | The client side secret of your environment.                                                                                                                                                          |
+| user   (**required**) | -                       | The user connected to your APP, can be ignored if anonymous equals to true.                                                                                                                          |
 | anonymous             | `false`                 | Set to true if you want to use a anonymous user, which is the case before user login to your APP. If that is your case, the user can be set later with the identify method after the user has logged in. |
-| enableDataSync        | `true`                  | Set to false if you do not want to sync data with remote server, in this case feature flags must be set to bootstrap option or be passed to the method bootstrap.                                        |
-| bootstrap             | `[ ]`                   | Init the SDK with feature flags, this will trigger the ready event immediately instead of requesting from the remote.                                                                                    |
-| api                   | `http://localhost:5100` | The evaluation server URL.                                                                                                                                                                               |
-| appType               | `javascript`            | The app type.                                                                                                                                                                                            |
-| devModePassword       | `''`                    | If set, the developer mode is enabled, and it must be activated by calling the method activateDevMode with password on fbClient.                                                                         |
+| enableDataSync        | `true`                  | Set to false if you do not want to sync data with remote server, in this case feature flags must be set to bootstrap option or be passed to the method bootstrap.                                    |
+| bootstrap             | `[ ]`                   | Init the SDK with feature flags, this will trigger the ready event immediately instead of requesting from the remote.                                                                                |
+| api                   | `http://localhost:5100` | The evaluation server URL.                                                                                                                                                                           |
+| appType               | `javascript`            | The app type.                                                                                                                                                                                        |
+| devModePassword       | `''`                    | If set, the developer mode is enabled. To activate it, you need to call the method activateDevMode with password.                                                                 |
 
 ### Bootstrap
 If you already have the feature flags available, two ways to pass them to the SDK instead of requesting from the remote.
