@@ -150,35 +150,6 @@ After initialization, the SDK has all the feature flags locally, and it does not
 const flagValue = fbClient.variation("YOUR_FEATURE_KEY", defaultValue);
 ```
 
-### Developer mode
-Developer mode is a powerful tool we created allowing developers to manipulate the feature flags locally instead of modifying them on remote server. **This will not change the remote values**.
-
-To activate the developer mode, the activateDevMode method should be called as following, the password parameter is
-
-```javascript
-// This will activate developer mode, you should be able to see an icon on bottom right of the screen. 
-// PASSWORD is mandatory and it should be the same as the value passed to option
-fbClient.activateFeatbitDevMode('PASSWORD');
-
-// or
-// this method is equivalent to Ffc.activateDevMode('PASSWORD')
-window.activateFeatbitDevMode('PASSWORD'); 
-```
-
-To open the developer mode editor or quit developer mode, use the following code:
-
-```javascript
-// The method will open the developer mode editor, or you can just click on the developer mode icon
-fbClient.openDevModeEditor();
-
-// call this method to quit developer mode
-fbClient.quitDevMode();
-
-// or
-// this is equivalent to Ffc.quitDevMode()
-window.quitFeatbitDevMode();
-```
-
 ### Events
 
 #### Wait for ready
@@ -253,6 +224,34 @@ We can manually call the method logout, which will switch the current user back 
   fbClient.logout(user);
 ```
 
+### Developer mode
+Developer mode is a powerful tool we created allowing developers to manipulate the feature flags locally instead of modifying them on remote server. **This will not change the remote values**.
+
+To activate the developer mode, the activateDevMode method should be called as following, the password parameter is
+
+```javascript
+// This will activate developer mode, you should be able to see an icon on bottom right of the screen. 
+// PASSWORD is mandatory and it should be the same as the value passed to option
+fbClient.activateFeatbitDevMode('PASSWORD');
+
+// or
+// this method is equivalent to Ffc.activateDevMode('PASSWORD')
+window.activateFeatbitDevMode('PASSWORD'); 
+```
+
+To open the developer mode editor or quit developer mode, use the following code:
+
+```javascript
+// The method will open the developer mode editor, or you can just click on the developer mode icon
+fbClient.openDevModeEditor();
+
+// call this method to quit developer mode
+fbClient.quitDevMode();
+
+// or
+// this is equivalent to Ffc.quitDevMode()
+window.quitFeatbitDevMode();
+```
 
 ### Data synchronization
 
@@ -279,6 +278,7 @@ fbClient.sendCustomEvent([{
   numericValue: 1
 }])
 ```
+
 **numericValue** is not mandatory, the default value is **1**.
 
 Make sure sendCustomEvent is called after the related feature flag is called by simply calling **Ffc.variation('featureFlagKeyName', 'default value')**, otherwise, the custom event won't be included into the experiment result.
