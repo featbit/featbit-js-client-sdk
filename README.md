@@ -279,7 +279,7 @@ In the meantime, the SDK would try to reconnect to the server by an incremental 
 
 ### Experiments (A/B/n Testing)
 
-We support automatic experiments for page views and clicks, you just need to set your experiment on our SaaS platform, then you should be able to see the result in near real time after the experiment is started.
+We support automatic experiments for page views and clicks, you just need to set your experiment on FeatBit portal, then you should be able to see the result in near real time after the experiment is started.
 
 In case you need more control over the experiment data sent to our server, we offer a method to send custom event.
 
