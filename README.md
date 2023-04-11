@@ -26,11 +26,10 @@ import fbClient from 'featbit-js-client-sdk';
 
 const option = {
   secret: "your env secret",
-  api: "EVALUATION_SERVER_URL",
   user: {
     name: "Bot",
     keyId: "bot-id",
-    customizedProperties: [ // optional
+    customizedProperties: [
       {
         "name": "level",
         "value": "high"
@@ -70,40 +69,52 @@ Before initializing the SDK, you need to get the client-side env secret of your 
 const option = {
   secret: "your env secret",
   user: {
-    name: "the user's user name",
-    keyId: "the user's unique identifier"
+    name: "Bot",
+    keyId: "bot-id",
+    customizedProperties: [
+      {
+          "name": "level",
+          "value": "high"
+      }
+    ]
   }
 };
 
 fbClient.init(option);
 ```
 
-The complete list of the available parameters in option:
-- **secret**: the client side secret of your environment. **mandatory** (NB. this becomes optional if enableDataSync equals false)
-- **anonymous**: true if you want to use a anonymous user, which is the case before user login to your APP. If that is your case, the user can be set later with the **identify** method after the user has logged in. The default value is false. **not mandatory**
-- **bootstrap**: init the SDK with feature flags, this will trigger the ready event immediately instead of requesting from the remote. **not mandatory**
-- **enableDataSync**: false if you do not want to sync data with remote server, in this case feature flags must be set to **bootstrap** option or be passed to the method **bootstrap**. The default value is true. **not mandatory**
-- **devModePassword**: if set, the developer mode is enabled, and it must be activated by calling the method **activateDevMode** with password on Ffc . **not mandatory**
-- **api**: the remote server URL. **mandatory**
-- **appType**: the app type, the default value is javascript, **not mandatory**
-- **user**: the user connected to your APP, can be ignored if **anonymous** equals to true.
-  - **name**: the user-friendly name, useful when viewing users in the portal. **mandatory**
-  - **keyId**: the unique user identifier. **mandatory**
-  - **customizedProperties**: any customized properties you want to send to the back end. It is extremely powerful when you define targeting rules or segments. **not mandatory**
-    - it must have the following format:
-     ```json
-      [{
-        "name": "the name of the property",
-        "value": "the value of the property"
-      }]
-     ```
+The user has three properties:
+- name(**requried**):  The user's name, useful when viewing users in the portal.
+- keyId(**requried**): The unique user identifier.
+- customizedProperties(**optional**): Any other customized properties. Users can be targeted by these customized properties. Here is the format definition:
+```json
+ [
+   {
+     "name": "the name of the property",
+     "value": "the value of the property"
+   }
+]
+```
+
+This table lists all available options
+
+| Options               | Defaults                | Description                                                                                                                                                                                              |
+|-----------------------|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| secret (**required**) | -                       | The client side secret of your environment.                                                                                                                                                              |
+| user   (**required**) | -                       | The user connected to your APP, can be ignored if anonymous equals to true.                                                                                                                              |
+| anonymous             | `false`                 | Set to true if you want to use a anonymous user, which is the case before user login to your APP. If that is your case, the user can be set later with the identify method after the user has logged in. |
+| enableDataSync        | `true`                  | Set to false if you do not want to sync data with remote server, in this case feature flags must be set to bootstrap option or be passed to the method bootstrap.                                        |
+| bootstrap             | `[ ]`                   | Init the SDK with feature flags, this will trigger the ready event immediately instead of requesting from the remote.                                                                                    |
+| api                   | `http://localhost:5100` | The remote server URL.                                                                                                                                                                                   |
+| appType               | `javascript`            | The app type, the default value is javascript, not mandatory                                                                                                                                             |
+| devModePassword       | `''`                    | If set, the developer mode is enabled, and it must be activated by calling the method activateDevMode with password on fbClient .                                                                        |
 
 ### Bootstrap
 If you already have the feature flags available, two ways to pass them to the SDK instead of requesting from the remote.
 - By the **init** method
 
 ```javascript
-  // define the option with the bootstrap parameter
+// define the option with the bootstrap parameter
 const option = {
   ...
   // the array should contain all your feature flags
