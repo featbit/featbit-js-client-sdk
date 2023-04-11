@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is the client side SDK for the feature management platform [FeatBit](https://github.com/featbit/featbit). We will document all the methods available in this SDK, and detail how they work.
+This is the client side SDK for the feature management platform [FeatBit](https://github.com/featbit/featbit). 
 
 Be aware, this is a client side SDK, it is intended for use in a single-user context, which can be mobile, desktop or embedded applications. This SDK can only be ran in a browser environment, it is not suitable for NodeJs applications.
 
@@ -10,40 +10,32 @@ Be aware, this is a client side SDK, it is intended for use in a single-user con
 
 ### Installation
 
-npm
 ```bash
 npm install featbit-js-client-sdk
-```
-
-To import the SDK:
-```javascript
-import fbClient from 'featbit-js-client-sdk';
-```
-
-If using typescript and seeing the following error:
-```
-Cannot find module 'featbit-js-client-sdk/esm'. Did you mean to set the 'moduleResolution' option to 'node', or to add aliases to the 'paths' option?
-```
-just add this in your tsconfig.json file
-```json
-  "compilerOptions": {
-    "moduleResolution": "node"
-  },
 ```
 
 ### Quick Start
 
 The following code demonstrates:
-1. initializing the SDK;
-2. how to get flag variation of a flag;
-3. Subscribe to flag change;
+1. Initialize the SDK
+2. Evaluate flag
+3. Subscribe to flag change
 
 ```javascript
+import fbClient from 'featbit-js-client-sdk';
+
 const option = {
   secret: "your env secret",
+  api: "EVALUATION_SERVER_URL",
   user: {
-    name: "the user's user name",
-    keyId: "the user's unique identifier"
+    name: "Bot",
+    keyId: "bot-id",
+    customizedProperties: [ // optional
+      {
+        "name": "level",
+        "value": "high"
+      }
+    ]
   }
 };
 
@@ -106,7 +98,50 @@ The complete list of the available parameters in option:
       }]
      ```
 
+### Bootstrap
+If you already have the feature flags available, two ways to pass them to the SDK instead of requesting from the remote.
+- By the **init** method
+
+```javascript
+  // define the option with the bootstrap parameter
+const option = {
+  ...
+  // the array should contain all your feature flags
+  bootstrap = [{
+    // feature flag key name
+    id: string,
+    // variation value
+    variation: string,
+    // variation data type, string will used if not specified
+    variationType: string
+  }],
+  ...
+}
+
+fbClient.init(option);
+```
+
+- By the **bootstrap** method
+
+```javascript
+// this array should contain all your feature flags
+const featureflags = [{
+  // feature flag key name
+  id: string,
+  // variation value
+  variation: string,
+  // variation data type, string will used if not specified
+  variationType: string
+}]
+
+fbClient.bootstrap(featureflags);
+```
+
+**If you want to disable the synchronization with remote server, set enableDataSync to false in option**. In this case, bootstrap option must be set or bootstrap method must be called with feature flags.
+
 ### Evaluation
+
+After initialization, the SDK has all the feature flags locally, and it does not need to request the remote server for any feature flag evaluation. All evaluation is done locally and synchronously, the average evaluation time is about **1** ms.
 
 ```javascript
 // Use this method for all cases
@@ -144,46 +179,9 @@ fbClient.quitDevMode();
 window.quitFeatbitDevMode();
 ```
 
-### Bootstrap
-If you already have the feature flags available, two ways to pass them to the SDK instead of requesting from the remote.
-- By the **init** method
+### Events
 
-```javascript
-  // define the option with the bootstrap parameter
-const option = {
-  ...
-          // the array should contain all your feature flags
-          bootstrap = [{
-            // feature flag key name
-            id: string,
-            // variation value
-            variation: string,
-            // variation data type, string will used if not specified
-            variationType: string
-          }],
-  ...
-}
-
-fbClient.init(option);
-```
-
-- By the **bootstrap** method
-
-```javascript
-// this array should contain all your feature flags
-const featureflags = [{
-  // feature flag key name
-  id: string,
-  // variation value
-  variation: string,
-  // variation data type, string will used if not specified
-  variationType: string
-}]
-
-fbClient.bootstrap(featureflags);
-```
-
-**If you want to disable the synchronization with remote server, set enableDataSync to false in option**. In this case, bootstrap option must be set or bootstrap method must be called with feature flags.
+#### Wait for ready
 
 To find out when the client is ready, you can use one of two mechanisms: events or promises.
 
@@ -195,7 +193,6 @@ fbClient.on('ready', (data) => {
   // variationValue has the type as defined on remote
   var flagValue = fbClient.variation("YOUR_FEATURE_KEY", defaultValue);
 });
-
 ```
 
 Or, you can use a promise instead of an event. The SDK has a method that return a promise for initialization: waitUntilReady(). The behavior of waitUntilReady() is equivalent to the ready event. The promise resolves when the client receives its initial flag data. As with all promises, you can either use .then() to provide a callback, or use await if you are writing asynchronous code.
@@ -213,21 +210,7 @@ const featureFlags = await fbClient.waitUntilReady();
 
 The SDK only decides initialization has failed if it receives an error response indicating that the environment ID is invalid. If it has trouble connecting to feature-flags.co, it will keep retrying until it succeeds.
 
-### Set the user after initialization
-If the user parameter cannot be passed by the init method, the following method can be used to set the user after initialization.
-
-```javascript
-  fbClient.identify(user);
-```
-
-### Set the user to anonymous user
-We can manully call the method logout, which will switch the current user back to anonymous user if exists already or create a new anonymous user.
-
-```javascript
-  fbClient.logout(user);
-```
-
-### Subscribe to feature flag(s) changes
+#### Subscribe to flag(s) changes
 
 To get notified when a feature flag is changed, we offer two methods
 - subscribe to the changes of any feature flag(s)
@@ -257,11 +240,25 @@ fbClient.on('ff_update:feature_flag_key', (change) => {
 
 ```
 
+### Switch user after initialization
+If the user parameter cannot be passed by the init method, the following method can be used to set the user after initialization.
+
+```javascript
+  fbClient.identify(user);
+```
+
+We can manually call the method logout, which will switch the current user back to anonymous user if exists already or create a new anonymous user.
+
+```javascript
+  fbClient.logout(user);
+```
+
+
 ### Data synchronization
 
 We use websocket to make the local data synchronized with the server, and then store them in memory by default. Whenever there is any change to a feature flag or its related data, this change will be pushed to the SDK, the average synchronization time is less than 100ms. Be aware the websocket connection may be interrupted due to internet outage, but it will be resumed automatically once the problem is gone.
 
-### Offline mode support
+### Network failure handling
 
 As all data is stored locally in the localStorage, in the following situations, the SDK would still work when there is temporarily no internet connection:
 - it has already received the data from previous connections
@@ -269,12 +266,10 @@ As all data is stored locally in the localStorage, in the following situations, 
 
 In the meantime, the SDK would try to reconnect to the server by an incremental interval, this makes sure that the websocket would be restored when the internet connection is back.
 
-### Evaluation of a feature flag
-After initialization, the SDK has all the feature flags locally and it does not need to request the remote server for any feature flag evaluation. All evaluation is done locally and synchronously, the average evaluation time is about **1** ms.
 
 ### Experiments (A/B/n Testing)
 
-We support automatic experiments for pageviews and clicks, you just need to set your experiment on our SaaS platform, then you should be able to see the result in near real time after the experiment is started.
+We support automatic experiments for page views and clicks, you just need to set your experiment on our SaaS platform, then you should be able to see the result in near real time after the experiment is started.
 
 In case you need more control over the experiment data sent to our server, we offer a method to send custom event.
 
@@ -290,7 +285,7 @@ Make sure sendCustomEvent is called after the related feature flag is called by 
 
 ## Getting support
 
-- If you have a specific question about using this SDK, we encourage you to ask it in our slack channel.
+- If you have a specific question about using this SDK, we encourage you to [ask it in Slack](https://join.slack.com/t/featbit/shared_invite/zt-1ew5e2vbb-x6Apan1xZOaYMnFzqZkGNQ).
 - If you encounter a bug or would like to request a feature, [submit an issue](https://github.com/featbit/featbit-js-client-sdk/issues).
 
 ## See Also
