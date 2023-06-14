@@ -6,45 +6,20 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="../umd/featbit-js-client-sdk.js"></script>
+    <script src="./umd/featbit-js-client-sdk.js"></script>
     <title>featbit.co</title>
 </head>
 
 <body style="background-color: rgb(217 239 233);">
-<div class="welcome"><span>欢迎新同学</span> <a href="#">Onboarding</a></div>
-<div class="welcomeb"><span>欢迎新同学b</span> <a href="#">Onboardingb</a></div>
-<div id="hide-element" class="anniu">隐藏我</div>
-<div id="activate-devmode" class="anniu">activate devmode</div>
-<div id="show-devmode-editor" class="anniu">display dev mode editor</div>
-<div id="quit-devmode" class="anniu">quit devmode</div>
-<div id="color-ff">COLOR</div>
-<button>Send event</button>
-<style>
-    .row {
-        margin-top: 20px;
-        text-align: center;
-    }
-
-    #version-a {
-        display: none;
-    }
-
-    #version-b {
-        display: none;
-    }
-
-    #version-c {
-        display: none;
-    }
-</style>
-
+<h1 style="text-align: center">FeatBit JavaScript SDK Demo</h1>
 <script type="text/javascript">
+    const secret = 'replace-with-your-env-secret';
+    const flagKey = 'replace-with-your-flag-key';
 
     window.onload = async (event) => {
         const option = {
-            secret: 'v3faJy3RCUO8d-EJiVdN6waRfGjfNan02Ms9c0LiTD6w=', // playground - Prod
-            api: 'http://localhost:5100',
-            anonymous: true,
+            secret: secret,
+            api: 'http://localhost:6100',
             devModePassword: '123abc',
             user: {
                 name: 'theuser',
@@ -52,35 +27,25 @@
                 customizedProperties: [
                     {
                         'name': 'orgId',
-                        'value': '85'
+                        'value': '4581'
                     }
                 ]
             }
         };
 
-        document.addEventListener("click", async function (e) {
-            if (e.target && e.target.innerText == 'Send event' ||
-                e.target && e.target.innerText == '开始使用') {
-
-                await fbClient.sendCustomEvent([
-                    {
-                        eventName: "开始使用点击事件",
-                        numericValue: 88
-                    }
-                ]);
-            }
-        });
-
-        fbClient.on('ff_update:ff1', (d) => {
-            let value = fbClient.variation('ff1', true);
-            if (value) {
-                document.getElementById('hide-element').style.display = 'block';
-            } else {
-                document.getElementById('hide-element').style.display = 'none';
-            }
-        });
-
         fbClient.init(option);
+
+        await fbClient.waitUntilReady();
+        let flagValue = fbClient.variation(flagKey, false);
+
+        console.log(`flagKey=${flagKey}; flagValue=${flagValue}`);
+
+        fbClient.on('ff_update', (changes) => {
+            // changes has this structure [{id: 'the feature_flag_key', oldValue: theOldValue, newValue: theNewValue }]
+            // the type of theOldValue and theNewValue is defined on FeatBit
+            flagValue = fbClient.variation(flagKey, false);
+            console.log(`flagKey=${flagkey}; flagValue=${flagValue}`);
+        });
     }
 </script>
 </body>
