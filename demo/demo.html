@@ -14,7 +14,7 @@
 <h1 style="text-align: center">FeatBit JavaScript SDK Demo</h1>
 <script type="text/javascript">
     const secret = 'replace-with-your-env-secret';
-    const flagkey = 'replace-with-your-flag-key';
+    const flagKey = 'replace-with-your-flag-key';
 
     window.onload = async (event) => {
         const option = {
@@ -33,113 +33,19 @@
             }
         };
 
-        let idx = 0;
-        const users = [
-            {
-                name: 'Han Meimei',
-                keyId: '10584',
-                customizedProperties: [
-                    {
-                        'name': 'age',
-                        'value': '18'
-                    }
-                ]
-            },
-            {
-                name: 'Paul-Alain',
-                keyId: '30100',
-                customizedProperties: [
-                    {
-                        'name': 'age',
-                        'value': '15'
-                    }
-                ]
-            },
-            {
-                name: 'Gregoire Dubois',
-                keyId: '32862',
-                customizedProperties: [
-                    {
-                        'name': 'age',
-                        'value': '19'
-                    }
-                ]
-            },
-            {
-                name: 'Chloé Duprès',
-                keyId: '14156',
-                customizedProperties: [
-                    {
-                        'name': 'age',
-                        'value': '21'
-                    }
-                ]
-            },
-            {
-                name: 'Antoine Thablt',
-                keyId: '55180',
-                customizedProperties: [
-                    {
-                        'name': 'age',
-                        'value': '40'
-                    }
-                ]
-            },
-            {
-                name: 'Nate Green',
-                keyId: '55774',
-                customizedProperties: [
-                    {
-                        'name': 'age',
-                        'value': '31'
-                    }
-                ]
-            },
-            {
-                name: 'Frank De Loire',
-                keyId: '23585',
-                customizedProperties: [
-                    {
-                        'name': 'age',
-                        'value': '17'
-                    }
-                ]
-            }];
-
-        var sendFFCall = ({name, keyId, customizedProperties}) => {
-            fbClient.identify({
-                name,
-                keyId,
-                customizedProperties
-            });
-
-            setTimeout(() => {
-                fbClient.variation(flagkey, false);
-                idx++;
-
-                setTimeout(() => {
-                    const user = users[idx];
-                    if (user) {
-                        sendFFCall(user);
-                    }
-                }, 500);
-            }, 500)
-        }
-
-        // const user = users[idx];
-        // sendFFCall(user);
-
         fbClient.init(option);
 
         await fbClient.waitUntilReady();
-        var r = fbClient.variation(flagkey, false);
+        let flagValue = fbClient.variation(flagKey, false);
+
+        console.log(`flagKey=${flagKey}; flagValue=${flagValue}`);
+
         fbClient.on('ff_update', (changes) => {
             // changes has this structure [{id: 'the feature_flag_key', oldValue: theOldValue, newValue: theNewValue }]
             // the type of theOldValue and theNewValue is defined on FeatBit
-
-            fbClient.variation(flagkey, false);
+            flagValue = fbClient.variation(flagKey, false);
+            console.log(`flagKey=${flagkey}; flagValue=${flagValue}`);
         });
-        console.log(typeof r);
     }
 </script>
 </body>
