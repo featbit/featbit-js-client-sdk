@@ -16,12 +16,12 @@ npm install featbit-js-client-sdk
 
 ### Prerequisite
 
-Before using the SDK, you need to obtain the environment secret and streaming URL. 
+Before using the SDK, you need to obtain the environment secret and SDK URLs. 
 
 Follow the documentation below to retrieve these values
 
 - [How to get the environment secret](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-environment-secret)
-- [How to get the streaming URL (the evaluation server URL)](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-streaming-url-the-evaluation-server-url)
+- [How to get the SDK URLs](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-sdk-urls)
 
 ### Quick Start
 
