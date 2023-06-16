@@ -92,6 +92,7 @@ fbClient.init(option);
 The user has three properties:
 - name(**requried**):  The user's name, useful when viewing users in the portal.
 - keyId(**requried**): The unique user identifier.
+- api: The streaming URL.
 - customizedProperties(**optional**): Any other customized properties. Users can be targeted by these customized properties. Here is the format definition:
 ```json
  [
