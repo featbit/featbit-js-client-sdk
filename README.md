@@ -14,6 +14,15 @@ Be aware, this is a client side SDK, it is intended for use in a single-user con
 npm install featbit-js-client-sdk
 ```
 
+### Prerequisite
+
+Before using the SDK, you need to obtain the environment secret and streaming URL. 
+
+Follow the documentation below to retrieve these values
+
+- [How to get the environment secret](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-environment-secret)
+- [How to get the streaming URL (the evaluation server URL)](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-streaming-url-the-evaluation-server-url)
+
 ### Quick Start
 
 The following code demonstrates:
@@ -26,6 +35,7 @@ import fbClient from 'featbit-js-client-sdk';
 
 const option = {
   secret: "your env secret",
+  api:"http://localhost:5100", // the Streaming URL
   user: {
     name: "Bot",
     keyId: "bot-id",
@@ -68,6 +78,7 @@ Before initializing the SDK, you need to get the client-side env secret of your 
 ```javascript
 const option = {
   secret: "your env secret",
+  api:"http://localhost:5100", // the Streaming URL
   user: {
     name: "Bot",
     keyId: "bot-id",
@@ -86,6 +97,7 @@ fbClient.init(option);
 The user has three properties:
 - name(**requried**):  The user's name, useful when viewing users in the portal.
 - keyId(**requried**): The unique user identifier.
+- api: The streaming URL.
 - customizedProperties(**optional**): Any other customized properties. Users can be targeted by these customized properties. Here is the format definition:
 ```json
  [
@@ -98,16 +110,16 @@ The user has three properties:
 
 This table lists all available options
 
-| Options               | Defaults                | Description                                                                                                                                                                                          |
-|-----------------------|-------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| secret (**required**) | -                       | The client side secret of your environment.                                                                                                                                                          |
-| user   (**required**) | -                       | The user connected to your APP, can be ignored if anonymous equals to true.                                                                                                                          |
+| Options               | Defaults                | Description                                                                                                                                                                                              |
+|-----------------------|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| secret (**required**) | -                       | The client side secret of your environment.                                                                                                                                                              |
+| user   (**required**) | -                       | The user connected to your APP, can be ignored if anonymous equals to true.                                                                                                                              |
 | anonymous             | `false`                 | Set to true if you want to use a anonymous user, which is the case before user login to your APP. If that is your case, the user can be set later with the identify method after the user has logged in. |
-| enableDataSync        | `true`                  | Set to false if you do not want to sync data with remote server, in this case feature flags must be set to bootstrap option or be passed to the method bootstrap.                                    |
-| bootstrap             | `[ ]`                   | Init the SDK with feature flags, this will trigger the ready event immediately instead of requesting from the remote.                                                                                |
-| api                   | `http://localhost:5100` | The evaluation server URL.                                                                                                                                                                           |
-| appType               | `javascript`            | The app type.                                                                                                                                                                                        |
-| devModePassword       | `''`                    | If set, the developer mode is enabled. To activate it, you need to call the method activateDevMode with password.                                                                 |
+| enableDataSync        | `true`                  | Set to false if you do not want to sync data with remote server, in this case feature flags must be set to bootstrap option or be passed to the method bootstrap.                                        |
+| bootstrap             | `[ ]`                   | Init the SDK with feature flags, this will trigger the ready event immediately instead of requesting from the remote.                                                                                    |
+| api                   | `http://localhost:5100` | The evaluation server streaming URL.                                                                                                                                                                     |
+| appType               | `javascript`            | The app type.                                                                                                                                                                                            |
+| devModePassword       | `''`                    | If set, the developer mode is enabled. To activate it, you need to call the method activateDevMode with password.                                                                                        |
 
 ### Bootstrap
 If you already have the feature flags available, two ways to pass them to the SDK instead of requesting from the remote.
