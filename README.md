@@ -8,17 +8,17 @@ Be aware, this is a client side SDK, it is intended for use in a single-user con
 
 ## Get Started
 
-### Get the streaming URL and environment secret
-
-Please read the following FAQ
-- [How to get the environment secret](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-environment-secret)
-- [How to get the streaming URL (the evaluation server URL)](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-streaming-url-the-evaluation-server-url)
-
 ### Installation
 
 ```bash
 npm install featbit-js-client-sdk
 ```
+
+### Get the streaming URL and environment secret
+
+Please read the following FAQ
+- [How to get the environment secret](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-environment-secret)
+- [How to get the streaming URL (the evaluation server URL)](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-streaming-url-the-evaluation-server-url)
 
 ### Quick Start
 
