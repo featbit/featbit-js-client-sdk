@@ -8,6 +8,12 @@ Be aware, this is a client side SDK, it is intended for use in a single-user con
 
 ## Get Started
 
+### Get the streaming URL and environment secret
+
+Please read the following FAQ
+- [How to get the environment secret](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-environment-secret)
+- [How to get the streaming URL (the evaluation server URL)](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-streaming-url-the-evaluation-server-url)
+
 ### Installation
 
 ```bash
@@ -61,11 +67,6 @@ fbClient.on('ff_update:YOUR_FEATURE_KEY', (change) => {
 - [React](https://github.com/featbit/featbit-samples/tree/main/samples/dino-game/interactive-demo-react)
 
 ## SDK
-
-### Get the streaming URL and environment secret
-Please read the following FAQ:
-- [How to get the environment secret](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-environment-secret)
-- [How to get the streaming URL (the evaluation server URL)](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-streaming-url-the-evaluation-server-url)
 
 ### Initialization
 
