@@ -26,6 +26,7 @@ import fbClient from 'featbit-js-client-sdk';
 
 const option = {
   secret: "your env secret",
+  api:"http://localhost:5100", // the Streaming URL
   user: {
     name: "Bot",
     keyId: "bot-id",
@@ -73,7 +74,7 @@ Before initializing the SDK, you need to get the client-side env secret of your 
 ```javascript
 const option = {
   secret: "your env secret",
-  api:"http://localhost:5100", // the Streaming URl
+  api:"http://localhost:5100", // the Streaming URL
   user: {
     name: "Bot",
     keyId: "bot-id",
