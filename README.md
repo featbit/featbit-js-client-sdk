@@ -14,9 +14,12 @@ Be aware, this is a client side SDK, it is intended for use in a single-user con
 npm install featbit-js-client-sdk
 ```
 
-### Get the streaming URL and environment secret
+### Prerequisite
 
-Please read the following FAQ
+Before using the SDK, you need to obtain the environment secret and streaming URL. 
+
+Follow the documentation below to retrieve these values
+
 - [How to get the environment secret](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-environment-secret)
 - [How to get the streaming URL (the evaluation server URL)](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-streaming-url-the-evaluation-server-url)
 
