@@ -13,13 +13,13 @@
 <body style="background-color: rgb(217 239 233);">
 <h1 style="text-align: center">FeatBit JavaScript SDK Demo</h1>
 <script type="text/javascript">
-    const secret = 'replace-with-your-env-secret';
-    const flagKey = 'replace-with-your-flag-key';
+    const secret = 'FgTmJJzdr0m8FKySYDsRmgxAcNv11VM0eAN4zNDgdArA';
+    const flagKey = 'game-runner';
 
     window.onload = async (event) => {
         const option = {
             secret: secret,
-            api: 'http://localhost:6100',
+            api: 'http://localhost:5100',
             devModePassword: '123abc',
             user: {
                 name: 'theuser',
@@ -37,6 +37,10 @@
 
         await fbClient.waitUntilReady();
         let flagValue = fbClient.variation(flagKey, false);
+
+        setTimeout(() => {
+            fbClient.sendCustomEvent([{eventName: 'aaa'}]);
+        }, 5000);
 
         console.log(`flagKey=${flagKey}; flagValue=${flagValue}`);
 

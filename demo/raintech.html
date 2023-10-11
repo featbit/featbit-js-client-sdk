@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="./umd/featbit-js-client-sdk.js"></script>
+  <title>Raintech</title>
+  <style>
+    #btn-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 250px;
+      gap: 16px;
+    }
+
+    button {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      font-size: 16px;
+      font-weight: 400;
+      color: #000;
+      cursor: pointer;
+    }
+
+    #subscribe-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 50px;
+    }
+
+    #btn-wrapper button.active {
+      font-weight: 700;
+      color: blue;
+    }
+  </style>
+</head>
+
+<body style="background-color: rgb(217 239 233);">
+<div id="btn-wrapper">
+  <button id="user1" class="active" onclick="setUser('user1@raintech.com', 'user1')">user1@raintech.com</button>
+  <button id="user2" onclick="setUser('user1@clienta.com', 'user2')">user1@clienta.com</button>
+<!--  <button id="user3" onclick="setUser('user1@clientb.com', 'user3')">user1@clientb.com</button>-->
+  <button id="random" onclick="setUser(null, 'random')">随机用户</button>
+</div>
+
+<h1 id="title" style="text-align: center">小雨农智1 Demo</h1>
+<!--<div id="subscribe-wrapper">-->
+<!--  <button id="subscribe">注册</button>-->
+<!--</div>-->
+<button id="subscribe">注册</button>
+<script type="text/javascript">
+  const api = 'http://localhost:8081';
+  const secret = 'Tb9R3rrZS06EQryWoN_4mABABrY7Zcq0SDvPuYbAM4SQ';
+  const percentageFlagKey = 'subscribe-module';
+  const remoteConfigKey = 'remote-config';
+
+  getUser = (keyId) => {
+    if (!keyId) {
+      keyId = `random${Math.floor(Math.random() * 1000) + 1}@random.com`;
+    }
+
+    return {
+        name: keyId,
+        keyId,
+        customizedProperties: [
+            {
+            'name': 'Client',
+            'value': keyId.split('@')[1].split('.')[0]
+            }
+        ]
+    }
+  }
+
+  setUser = (keyId, element) => {
+    const user = getUser(keyId);
+    fbClient.identify(user);
+
+    const $btns = document.querySelectorAll('#btn-wrapper button');
+    $btns.forEach($btn => {
+      $btn.className = '';
+    });
+
+    const $btn = document.getElementById(element);
+    $btn.innerText = user.keyId;
+    $btn.className = 'active';
+
+    return user;
+  }
+
+  configTitle = () => {
+    const defaultTitleConfig = {
+      "font-size": "20px",
+      "color": "black"
+    };
+
+    const titleConfig = fbClient.variation(remoteConfigKey, defaultTitleConfig);
+    const $title = document.getElementById('title');
+
+    $title.style.fontSize = titleConfig['font-size'];
+    $title.style.color = titleConfig['color'];
+  }
+
+  window.onload = async (event) => {
+    const defaultUser = setUser('user1@raintech.com', 'user1')
+
+    const option = {
+      secret: secret,
+      api: api,
+      devModePassword: '123abc',
+      user: defaultUser,
+    };
+
+    fbClient.init(option);
+    await fbClient.waitUntilReady();
+
+    // percentage rollout
+    // const isSubscribe = fbClient.variation(percentageFlagKey, false);
+    // if (isSubscribe) {
+    //   document.getElementById('subscribe').style.display = 'block';
+    // } else {
+    //   document.getElementById('subscribe').style.display = 'none';
+    // }
+
+    fbClient.on(`ff_update:${percentageFlagKey}`, (changes) => {
+      const isSubscribe = fbClient.variation(percentageFlagKey, false);
+      if (isSubscribe) {
+        document.getElementById('subscribe').style.display = 'block';
+      } else {
+        document.getElementById('subscribe').style.display = 'none';
+      }
+    });
+
+    // remote config
+    configTitle();
+    fbClient.on(`ff_update:${remoteConfigKey}`, (changes) => {
+      configTitle();
+    });
+
+    // send event
+    document.getElementById('subscribe').onclick = () =>
+      fbClient.sendCustomEvent([{eventName: 'subscribe'}]);
+    }
+</script>
+</body>
+
+</html>
