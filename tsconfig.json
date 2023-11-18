@@ -3,12 +3,13 @@
   "compilerOptions": {
     "outDir": "esm",
     "noImplicitAny": false,
+    "target": "es5",
     "module": "esnext",
     "lib": [ "es2019", "dom" ],
-    "target": "es5",
     "allowJs": true,
     "sourceMap": true,
-    "declaration": true
+    "declaration": true,
+    "skipLibCheck": true 
   },
   "include": [
     "src/**/*.ts",
