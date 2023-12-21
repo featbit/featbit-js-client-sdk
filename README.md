@@ -20,8 +20,8 @@ Before using the SDK, you need to obtain the environment secret and SDK URLs.
 
 Follow the documentation below to retrieve these values
 
-- [How to get the environment secret](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-environment-secret)
-- [How to get the SDK URLs](https://docs.featbit.co/docs/sdk/faq#how-to-get-the-sdk-urls)
+- [How to get the environment secret](https://docs.featbit.co/sdk/faq#how-to-get-the-environment-secret)
+- [How to get the SDK URLs](https://docs.featbit.co/sdk/faq#how-to-get-the-sdk-urls)
 
 ### Quick Start
 
@@ -313,4 +313,4 @@ Make sure sendCustomEvent is called after the related feature flag is called by 
 
 ## See Also
 
-- [FeatBit in 3 minutes](https://docs.featbit.co/docs/getting-started/1.-featbit-in-3-minutes)
+- [Connect To JavaScript Sdk](https://docs.featbit.co/getting-started/connect-an-sdk#javascript)
