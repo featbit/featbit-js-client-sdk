@@ -1,8 +1,8 @@
 {
   "name": "featbit-js-client-sdk",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "https://github.com/featbit/featbit-js-client-sdk",
-  "main": "esm/featbit.js",
+  "main": "esm/index.js",
   "scripts": {
     "watch-esm": "rimraf esm && tsc --watch",
     "watch-umd": "rimraf umd && webpack --watch --mode development",
