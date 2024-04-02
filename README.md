@@ -238,13 +238,13 @@ fbClient.on('ff_update:feature_flag_key', (change) => {
 If the user parameter cannot be passed by the init method, the following method can be used to set the user after initialization.
 
 ```javascript
-  fbClient.identify(user);
+await fbClient.identify(user);
 ```
 
 We can manually call the method logout, which will switch the current user back to anonymous user if exists already or create a new anonymous user.
 
 ```javascript
-  fbClient.logout(user);
+fbClient.logout(user);
 ```
 
 ### Developer mode
