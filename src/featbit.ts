@@ -1,7 +1,7 @@
-import {eventHub} from "./events";
-import {logger} from "./logger";
+import { eventHub } from "./events";
+import { logger } from "./logger";
 import store from "./store";
-import {networkService} from "./network.service";
+import { networkService } from "./network.service";
 import {
   FeatureFlagValue,
   ICustomEvent,
@@ -25,7 +25,7 @@ import {
   validateOption,
   validateUser
 } from "./utils";
-import {Queue} from "./queue";
+import { Queue } from "./queue";
 import {
   currentUserStorageKey,
   featureFlagEvaluatedBufferTopic,
@@ -47,9 +47,9 @@ function createOrGetAnonymousUser(): IUser {
 
 function mapFeatureFlagsToFeatureFlagBaseList(featureFlags: { [key: string]: IFeatureFlag }): IFeatureFlagBase[] {
   return Object.keys(featureFlags).map((cur) => {
-    const { id, variation } = featureFlags[cur];
+    const {id, variation} = featureFlags[cur];
     const variationType = featureFlags[cur].variationType || VariationDataType.string;
-    return { id, variation: parseVariation(variationType, variation), variationType };
+    return {id, variation: parseVariation(variationType, variation), variationType};
   });
 }
 
@@ -73,19 +73,19 @@ export class FB {
       this.on('ready', () => {
         const featureFlags = store.getFeatureFlags();
         resolve(mapFeatureFlagsToFeatureFlagBaseList(featureFlags));
-        if (this._option.enableDataSync){
+        if (this._option.enableDataSync) {
           const buffered = this._featureFlagEvaluationBuffer.flush().map(f => {
             const featureFlag = featureFlags[f.id];
             if (!featureFlag) {
-              logger.log(`Called unexisting feature flag: ${f.id}`);
+              logger.log(`Called unexisting feature flag: ${ f.id }`);
               return null;
             }
-            
+
             const variation = featureFlag.variationOptions.find(o => o.value === f.variationValue);
             if (!variation) {
-              logger.log(`Sent buffered insight for feature flag: ${f.id} with unexisting default variation: ${f.variationValue}`);
+              logger.log(`Sent buffered insight for feature flag: ${ f.id } with unexisting default variation: ${ f.variationValue }`);
             } else {
-              logger.logDebug(`Sent buffered insight for feature flag: ${f.id} with variation: ${variation.value}`);
+              logger.logDebug(`Sent buffered insight for feature flag: ${ f.id } with variation: ${ variation.value }`);
             }
 
             return {
@@ -93,7 +93,7 @@ export class FB {
               id: featureFlag.id,
               timestamp: f.timestamp,
               sendToExperiment: featureFlag.sendToExperiment,
-              variation: variation || { id: -1, value: f.variationValue }
+              variation: variation || {id: -1, value: f.variationValue}
             }
           });
 
@@ -111,7 +111,7 @@ export class FB {
           this._readyEventEmitted = true;
           eventHub.emit('ready', mapFeatureFlagsToFeatureFlagBaseList(store.getFeatureFlags()));
         }
-      }catch(err) {
+      } catch (err) {
         logger.log('data sync error', err);
       }
     });
@@ -122,7 +122,7 @@ export class FB {
 
     // track feature flag usage data
     eventHub.subscribe(insightsFlushTopic, () => {
-      if (this._option.enableDataSync){
+      if (this._option.enableDataSync) {
         networkService.sendInsights(this._insightsQueue.flush());
       }
     });
@@ -174,7 +174,7 @@ export class FB {
     if (this._option.enableDataSync) {
       networkService.init(this._option.streamingUri!, this._option.eventsUri!, this._option.secret, this._option.appType!);
     }
-    
+
     await this.identify(option.user || createOrGetAnonymousUser());
   }
 
@@ -185,7 +185,7 @@ export class FB {
       return;
     }
 
-    user.customizedProperties = user.customizedProperties?.map(p => ({name: p.name, value: `${p.value}`}));
+    user.customizedProperties = user.customizedProperties?.map(p => ({name: p.name, value: `${ p.value }`}));
 
     const isUserChanged = serializeUser(user) !== localStorage.getItem(currentUserStorageKey);
     this._option.user = Object.assign({}, user);
@@ -214,8 +214,15 @@ export class FB {
     if (featureFlags && featureFlags.length > 0) {
       const data = {
         featureFlags: featureFlags.reduce((res, curr) => {
-          const { id, variation, timestamp, variationOptions, sendToExperiment, variationType } = curr;
-          res[id] = { id, variation, timestamp, variationOptions: variationOptions || [{id: 1, value: variation}], sendToExperiment, variationType: variationType || VariationDataType.string };
+          const {id, variation, timestamp, variationOptions, sendToExperiment, variationType} = curr;
+          res[id] = {
+            id,
+            variation,
+            timestamp,
+            variationOptions: variationOptions || [{id: 1, value: variation}],
+            sendToExperiment,
+            variationType: variationType || VariationDataType.string
+          };
 
           return res;
         }, {} as { [key: string]: IFeatureFlag })
@@ -229,7 +236,7 @@ export class FB {
       // start data sync
       try {
         await this.dataSync(forceFullFetch);
-      }catch(err) {
+      } catch (err) {
         logger.log('data sync error', err);
       }
     }
@@ -246,15 +253,22 @@ export class FB {
 
       networkService.createConnection(timestamp, (message: IStreamResponse) => {
         if (message && message.userKeyId === this._option.user?.keyId) {
-          const { featureFlags } = message;
+          const {featureFlags} = message;
 
           switch (message.eventType) {
             case StreamResponseEventType.full: // full data
             case StreamResponseEventType.patch: // partial data
               const data = {
                 featureFlags: featureFlags.reduce((res, curr) => {
-                  const { id, variation, timestamp, variationOptions, sendToExperiment, variationType } = curr;
-                  res[id] = { id, variation, timestamp, variationOptions, sendToExperiment, variationType: variationType || VariationDataType.string };
+                  const {id, variation, timestamp, variationOptions, sendToExperiment, variationType} = curr;
+                  res[id] = {
+                    id,
+                    variation,
+                    timestamp,
+                    variationOptions,
+                    sendToExperiment,
+                    variationType: variationType || VariationDataType.string
+                  };
 
                   return res;
                 }, {} as { [key: string]: IFeatureFlag })
@@ -294,7 +308,7 @@ export class FB {
   }
 
   getUser(): IUser {
-    return { ...this._option.user! };
+    return {...this._option.user!};
   }
 
   sendCustomEvent(data: ICustomEvent[]): void {
@@ -326,7 +340,7 @@ const variationWithInsightBuffer = (key: string, defaultResult: string | boolean
     eventHub.emit(featureFlagEvaluatedBufferTopic, {
       id: key,
       timestamp: Date.now(),
-      variationValue: `${defaultResult}`
+      variationValue: `${ defaultResult }`
     } as IFeatureFlagVariationBuffer);
   }
 
