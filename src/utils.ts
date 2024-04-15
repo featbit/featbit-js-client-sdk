@@ -1,9 +1,10 @@
-import {FeatureFlagValue, ICSS, IOption, IUser, UrlMatchType, VariationDataType} from "./types";
+import {FeatureFlagValue, IOption, IUser, VariationDataType} from "./types";
 import {logger} from "./logger";
+import OptionMessages from "./optionMessages";
 
 
 // generate default user info
-export function generateGuid(): string {
+export function generateorGetGuid(): string {
   let guid = localStorage.getItem("fb-guid");
   if (guid) {
     return guid;
@@ -81,40 +82,63 @@ export function uuid(): string {
 
 export function validateUser(user: IUser): string | null {
   if (!user) {
-    return 'user must be defined';
+    return OptionMessages.mandatory('user')
   }
 
   const { keyId, name } = user;
 
   if (keyId === undefined || keyId === null || keyId.trim() === '') {
-    return 'keyId is mandatory';
+    return OptionMessages.mandatory('user.keyId');
   }
 
   if (name === undefined || name === null || name.trim() === '') {
-    return 'name is mandatory';
+    return OptionMessages.mandatory('user.name');
   }
 
   return null;
 }
 
+export function isNullOrUndefinedOrWhiteSpace(value?: string): boolean {
+  return value === null || value === undefined || value.trim() === '';
+}
+
 export function validateOption(option: IOption): string | null {
   if (option === undefined || option === null) {
-    return 'option is mandatory';
+    return OptionMessages.mandatory('option')
   }
 
-  const { api, secret, anonymous, user, enableDataSync } = option;
+  const { api, streamingUri, eventsUri, secret, anonymous, user, enableDataSync } = option;
 
-  if (enableDataSync && (api === undefined || api === null || api.trim() === '')) {
-    return 'api is mandatory in option';
+  const apiMissing = isNullOrUndefinedOrWhiteSpace(api);
+  const streamingUriMissing = isNullOrUndefinedOrWhiteSpace(streamingUri);
+  const eventsUriMissing = isNullOrUndefinedOrWhiteSpace(eventsUri);
+
+  if (enableDataSync && (apiMissing || streamingUriMissing || eventsUriMissing))
+  {
+    if (apiMissing) {
+      if (eventsUriMissing) {
+        return OptionMessages.partialEndpoint('eventsUri');
+      }
+
+      if (streamingUriMissing) {
+        return OptionMessages.partialEndpoint('streamingUri');
+      }
+
+      if (eventsUriMissing && streamingUriMissing) {
+        return OptionMessages.partialEndpoint('api');
+      }
+    } else {
+      console.warn(`You're using the deprecated api option, please use streamingUri and eventsUri instead`);
+    }
   }
 
-  if (enableDataSync && (secret === undefined || secret === null || secret.trim() === '')) {
-    return 'secret is mandatory in option';
+  if (enableDataSync && isNullOrUndefinedOrWhiteSpace(secret)) {
+    return OptionMessages.invalidParam('secret');
   }
 
   // validate user
   if (!!anonymous === false && !user) {
-    return 'user is mandatory when not using anonymous user';
+    return OptionMessages.mandatory('user');
   }
 
   if (user) {
@@ -122,36 +146,6 @@ export function validateOption(option: IOption): string | null {
   }
 
   return null;
-}
-
-/******************** draggable begin ************************/
-export function makeElementDraggable(el) {
-  el.addEventListener('mousedown', function(this: HTMLElement, e) {
-    var offsetX = e.clientX - parseInt(window.getComputedStyle(this).left);
-    var offsetY = e.clientY - parseInt(window.getComputedStyle(this).top);
-    
-    function mouseMoveHandler(e) {
-      e.preventDefault();
-      el.style.top = (e.clientY - offsetY) + 'px';
-      el.style.left = (e.clientX - offsetX) + 'px';
-    }
-
-    function reset() {
-      document.removeEventListener('mousemove', mouseMoveHandler);
-      document.removeEventListener('mouseup', reset);
-    }
-
-    document.addEventListener('mousemove', mouseMoveHandler);
-    document.addEventListener('mouseup', reset);
-  });
-}
-/******************** draggable end ************************/
-
-// add style to html element
-export function addCss(element: HTMLElement, style: { [key: string]: string }) {
-  for (const property in style) {
-    element.style[property] = style[property];
-  }
 }
 
 /********************** encode text begin *****************************/
@@ -186,50 +180,3 @@ export function generateConnectionToken(text: string): string {
 }
 
 /********************** encode text end *****************************/
-
-// test if the current page url mathch the given url
-export function isUrlMatch(matchType: UrlMatchType, url: string): boolean {
-  const current_page_url = window.location.href;
-  if (url === null || url === undefined || url === '') {
-    return true;
-  }
-  
-  switch(matchType){
-    case UrlMatchType.Substring:
-      return current_page_url.includes(url);
-    default:
-      return false;
-  }
-}
-
-export function groupBy (xs: any, key: string): {[key: string] : any} {
-  return xs.reduce(function(rv, x) {
-    (rv[x[key]] = rv[x[key]] || []).push(x);
-    return rv;
-  }, {});
-};
-
-export function extractCSS(css: string): ICSS[] {
-  return css.trim().replace(/(?:\r\n|\r|\n)/g, ';')
-    .replace(/\w*([\W\w])+\{/g, '')
-    .replace(/(?:\{|\})/g, '')
-    .split(';')
-    .filter(c => c.trim() !== '')
-    .map(c => {
-      const style = c.split(':');
-      if (style.length === 2) {
-        return {
-          name: style[0].trim(),
-          value: style[1].trim()
-        }
-      }
-      
-      return {
-        name: '',
-        value: ''
-      }
-    })
-    .filter(s => {
-      return s.name !== '' && s.value !== ''
-    });
-}

@@ -1,7 +1,7 @@
 import { websocketReconnectTopic } from "./constants";
 import { eventHub } from "./events";
 import { logger } from "./logger";
-import { IExptMetricSetting, IInsight, InsightType, IStreamResponse, IUser, IZeroCode } from "./types";
+import { IInsight, InsightType, IStreamResponse, IUser } from "./types";
 import { generateConnectionToken } from "./utils";
 import throttleUtil from "./throttleutil";
 
@@ -9,7 +9,8 @@ const socketConnectionIntervals = [250, 500, 1000, 2000, 4000, 8000];
 
 class NetworkService {
   private user: IUser | undefined;
-  private api: string | undefined;
+  private streamingUri: string | undefined;
+  private eventsUri: string | undefined;
   private secret: string | undefined;
   private appType: string | undefined;
 
@@ -17,8 +18,9 @@ class NetworkService {
 
   constructor(){}
 
-  init(api: string, secret: string, appType: string) {
-    this.api = api;
+  init(streamingUri: string, eventsUri: string, secret: string, appType: string) {
+    this.streamingUri = streamingUri;
+    this.eventsUri = eventsUri;
     this.secret = secret;
     this.appType = appType;
   }
@@ -101,7 +103,7 @@ class NetworkService {
 
     const startTime = Date.now();
     // Create WebSocket connection.
-    const url = this.api?.replace(/^http/, 'ws') + `/streaming?type=client&token=${generateConnectionToken(this.secret!)}`;
+    const url = `${this.streamingUri}/streaming?type=client&token=${generateConnectionToken(this.secret!)}`;
     that.socket = new WebSocket(url);
 
     // Connection opened
@@ -177,37 +179,11 @@ class NetworkService {
         }))
       }];
   
-      await post(`${this.api}/api/public/insight/track`, payload, { Authorization: this.secret });
+      await post(`${this.eventsUri}/api/public/insight/track`, payload, { Authorization: this.secret });
     } catch (err) {
       logger.logDebug(err);
     }
   })
-
-  async getActiveExperimentMetricSettings(): Promise<IExptMetricSetting[] | []> {
-    const exptMetricSettingLocalStorageKey = 'fb_expt_metric';
-    try {
-        const result = await get(`${this.api}/api/public/sdk/experiments`, { Authorization: this.secret! });
-
-        localStorage.setItem(exptMetricSettingLocalStorageKey, JSON.stringify(result.data));
-        return result.data;
-    } catch (error) {
-        logger.log(error);
-        return !!localStorage.getItem(exptMetricSettingLocalStorageKey) ? JSON.parse(localStorage.getItem(exptMetricSettingLocalStorageKey) as string) : [];
-    }
-}
-
-async getZeroCodeSettings(): Promise<IZeroCode[] | []> {
-    const zeroCodeSettingLocalStorageKey = 'fb_zcs';
-    try {
-        const result = await get(`${this.api}/api/public/sdk/zero-code`, { Authorization: this.secret! });
-
-        localStorage.setItem(zeroCodeSettingLocalStorageKey, JSON.stringify(result.data));
-        return result.data;
-    } catch (error) {
-      logger.log(error);
-        return !!localStorage.getItem(zeroCodeSettingLocalStorageKey) ? JSON.parse(localStorage.getItem(zeroCodeSettingLocalStorageKey) as string) : [];
-    }
-}
 }
 
 export const networkService = new NetworkService();

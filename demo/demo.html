@@ -13,14 +13,14 @@
 <body style="background-color: rgb(217 239 233);">
 <h1 style="text-align: center">FeatBit JavaScript SDK Demo</h1>
 <script type="text/javascript">
-    const secret = 'FgTmJJzdr0m8FKySYDsRmgxAcNv11VM0eAN4zNDgdArA';
-    const flagKey = 'game-runner';
+    const secret = 'Obg68EqYZk27JTxphPgy7At1aJ8GaAtEaIA1fb3IpuEA';
+    const flagKey = 'robot';
 
     window.onload = async (event) => {
         const option = {
             secret: secret,
-            api: 'http://localhost:5100',
-            devModePassword: '123abc',
+            streamingUri: 'wss://app-eval.featbit.co',
+            eventsUri: 'https://app-eval.featbit.co',
             user: {
                 name: 'theuser',
                 keyId: 'thekeyid',
@@ -44,12 +44,14 @@
 
         console.log(`flagKey=${flagKey}; flagValue=${flagValue}`);
 
-        fbClient.on('ff_update', (changes) => {
+        const changeHander = (changes) => {
             // changes has this structure [{id: 'the feature_flag_key', oldValue: theOldValue, newValue: theNewValue }]
             // the type of theOldValue and theNewValue is defined on FeatBit
             flagValue = fbClient.variation(flagKey, false);
             console.log(`flagKey=${flagkey}; flagValue=${flagValue}`);
-        });
+        };
+
+        fbClient.on('ff_update', changeHander);
     }
 </script>
 </body>
