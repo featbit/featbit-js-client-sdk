@@ -11,7 +11,7 @@ Be aware, this is a client side SDK, it is intended for use in a single-user con
 ### Installation
 
 ```bash
-npm install featbit-js-client-sdk
+npm install @featbit/js-client-sdk
 ```
 
 ### Prerequisite
@@ -31,7 +31,7 @@ The following code demonstrates:
 3. Subscribe to flag change
 
 ```javascript
-import fbClient from 'featbit-js-client-sdk';
+import fbClient from '@featbit/js-client-sdk';
 
 const option = {
   secret: "your env secret",
