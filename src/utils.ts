@@ -1,9 +1,10 @@
 import {FeatureFlagValue, IOption, IUser, VariationDataType} from "./types";
 import {logger} from "./logger";
+import OptionMessages from "./optionMessages";
 
 
 // generate default user info
-export function generateGuid(): string {
+export function generateorGetGuid(): string {
   let guid = localStorage.getItem("fb-guid");
   if (guid) {
     return guid;
@@ -81,40 +82,63 @@ export function uuid(): string {
 
 export function validateUser(user: IUser): string | null {
   if (!user) {
-    return 'user must be defined';
+    return OptionMessages.mandatory('user')
   }
 
   const { keyId, name } = user;
 
   if (keyId === undefined || keyId === null || keyId.trim() === '') {
-    return 'keyId is mandatory';
+    return OptionMessages.mandatory('user.keyId');
   }
 
   if (name === undefined || name === null || name.trim() === '') {
-    return 'name is mandatory';
+    return OptionMessages.mandatory('user.name');
   }
 
   return null;
 }
 
+export function isNullOrUndefinedOrWhiteSpace(value?: string): boolean {
+  return value === null || value === undefined || value.trim() === '';
+}
+
 export function validateOption(option: IOption): string | null {
   if (option === undefined || option === null) {
-    return 'option is mandatory';
+    return OptionMessages.mandatory('option')
   }
 
-  const { api, secret, anonymous, user, enableDataSync } = option;
+  const { api, streamingUri, eventsUri, secret, anonymous, user, enableDataSync } = option;
 
-  if (enableDataSync && (api === undefined || api === null || api.trim() === '')) {
-    return 'api is mandatory in option';
+  const apiMissing = isNullOrUndefinedOrWhiteSpace(api);
+  const streamingUriMissing = isNullOrUndefinedOrWhiteSpace(streamingUri);
+  const eventsUriMissing = isNullOrUndefinedOrWhiteSpace(eventsUri);
+
+  if (enableDataSync && (apiMissing || streamingUriMissing || eventsUriMissing))
+  {
+    if (apiMissing) {
+      if (eventsUriMissing) {
+        return OptionMessages.partialEndpoint('eventsUri');
+      }
+
+      if (streamingUriMissing) {
+        return OptionMessages.partialEndpoint('streamingUri');
+      }
+
+      if (eventsUriMissing && streamingUriMissing) {
+        return OptionMessages.partialEndpoint('api');
+      }
+    }
+  } else {
+    return `You're using the deprecated api option, please use streamingUri and eventsUri instead`;
   }
 
-  if (enableDataSync && (secret === undefined || secret === null || secret.trim() === '')) {
-    return 'secret is mandatory in option';
+  if (enableDataSync && isNullOrUndefinedOrWhiteSpace(secret)) {
+    return OptionMessages.invalidParam('secret');
   }
 
   // validate user
   if (!!anonymous === false && !user) {
-    return 'user is mandatory when not using anonymous user';
+    return OptionMessages.mandatory('user');
   }
 
   if (user) {

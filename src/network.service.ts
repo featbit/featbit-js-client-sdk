@@ -9,7 +9,8 @@ const socketConnectionIntervals = [250, 500, 1000, 2000, 4000, 8000];
 
 class NetworkService {
   private user: IUser | undefined;
-  private api: string | undefined;
+  private streamingUri: string | undefined;
+  private eventsUri: string | undefined;
   private secret: string | undefined;
   private appType: string | undefined;
 
@@ -17,8 +18,9 @@ class NetworkService {
 
   constructor(){}
 
-  init(api: string, secret: string, appType: string) {
-    this.api = api;
+  init(streamingUri: string, eventsUri: string, secret: string, appType: string) {
+    this.streamingUri = streamingUri;
+    this.eventsUri = eventsUri;
     this.secret = secret;
     this.appType = appType;
   }
@@ -101,7 +103,7 @@ class NetworkService {
 
     const startTime = Date.now();
     // Create WebSocket connection.
-    const url = this.api?.replace(/^http/, 'ws') + `/streaming?type=client&token=${generateConnectionToken(this.secret!)}`;
+    const url = `${this.streamingUri}/streaming?type=client&token=${generateConnectionToken(this.secret!)}`;
     that.socket = new WebSocket(url);
 
     // Connection opened
@@ -177,7 +179,7 @@ class NetworkService {
         }))
       }];
   
-      await post(`${this.api}/api/public/insight/track`, payload, { Authorization: this.secret });
+      await post(`${this.eventsUri}/api/public/insight/track`, payload, { Authorization: this.secret });
     } catch (err) {
       logger.logDebug(err);
     }

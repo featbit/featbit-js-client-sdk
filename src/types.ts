@@ -14,7 +14,12 @@ export interface IOption {
   secret: string,
   anonymous?: boolean,
   bootstrap?: IFeatureFlag[],
+  streamingUri?: string,
+  eventsUri?: string,
+
+  // deprecated, this option will be removed in the future, please use streamingUri and eventsUri instead
   api?: string,
+
   appType?: string,
   user?: IUser,
   enableDataSync?: boolean

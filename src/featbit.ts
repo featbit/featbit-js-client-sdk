@@ -17,9 +17,17 @@ import {
   StreamResponseEventType,
   VariationDataType
 } from "./types";
-import {generateGuid, parseVariation, serializeUser, validateOption, validateUser} from "./utils";
+import {
+  generateorGetGuid,
+  isNullOrUndefinedOrWhiteSpace,
+  parseVariation,
+  serializeUser,
+  validateOption,
+  validateUser
+} from "./utils";
 import {Queue} from "./queue";
 import {
+  currentUserStorageKey,
   featureFlagEvaluatedBufferTopic,
   featureFlagEvaluatedTopic,
   insightsFlushTopic,
@@ -29,17 +37,7 @@ import {
 
 
 function createOrGetAnonymousUser(): IUser {
-  let sessionId = generateGuid();
-  var c_name = 'JSESSIONID';
-  if (document.cookie.length > 0) {
-    let c_start = document.cookie.indexOf(c_name + "=")
-    if (c_start != -1) {
-      c_start = c_start + c_name.length + 1
-      let c_end = document.cookie.indexOf(";", c_start)
-      if (c_end == -1) c_end = document.cookie.length
-      sessionId = decodeURI(document.cookie.substring(c_start, c_end));
-    }
-  }
+  const sessionId = generateorGetGuid();
 
   return {
     name: sessionId,
@@ -64,6 +62,8 @@ export class FB {
   private _option: IOption = {
     secret: '',
     api: '',
+    streamingUri: '',
+    eventsUri: '',
     enableDataSync: true,
     appType: 'javascript'
   };
@@ -151,10 +151,24 @@ export class FB {
       return;
     }
 
-    this._option = {...this._option, ...option, ...{ api: (option.api || this._option.api)?.replace(/\/$/, '') }};
+    this._option = {
+      ...this._option,
+      ...option,
+      ...{
+        api: (option.api || this._option.api)?.replace(/\/$/, '')
+      }
+    };
+
+    if (isNullOrUndefinedOrWhiteSpace(this._option.streamingUri)) {
+      this._option.streamingUri = this._option.api?.replace(/^http/, 'ws');
+    }
+
+    if (isNullOrUndefinedOrWhiteSpace(this._option.eventsUri)) {
+      this._option.eventsUri = this._option.api;
+    }
 
     if (this._option.enableDataSync) {
-      networkService.init(this._option.api!, this._option.secret, this._option.appType!);
+      networkService.init(this._option.streamingUri!, this._option.eventsUri!, this._option.secret, this._option.appType!);
     }
     
     await this.identify(option.user || createOrGetAnonymousUser());
@@ -169,9 +183,9 @@ export class FB {
 
     user.customizedProperties = user.customizedProperties?.map(p => ({name: p.name, value: `${p.value}`}));
 
-    const isUserChanged = serializeUser(user) !== localStorage.getItem('current_user');
+    const isUserChanged = serializeUser(user) !== localStorage.getItem(currentUserStorageKey);
     this._option.user = Object.assign({}, user);
-    localStorage.setItem('current_user', serializeUser(this._option.user));
+    localStorage.setItem(currentUserStorageKey, serializeUser(this._option.user));
 
     store.userId = this._option.user.keyId;
     networkService.identify(this._option.user, isUserChanged);
