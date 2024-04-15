@@ -14,7 +14,6 @@ export interface IOption {
   secret: string,
   anonymous?: boolean,
   bootstrap?: IFeatureFlag[],
-  devModePassword?: string,
   api?: string,
   appType?: string,
   user?: IUser,
@@ -93,9 +92,7 @@ export enum StreamResponseEventType {
 }
 
 export enum FeatureFlagUpdateOperation {
-  update = 'update',
-  createDevData = 'createDevData',
-  devDataCreated = 'devDataCreated'
+  update = 'update'
 }
 
 export interface IStreamResponse {

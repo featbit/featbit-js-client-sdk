@@ -124,36 +124,6 @@ export function validateOption(option: IOption): string | null {
   return null;
 }
 
-/******************** draggable begin ************************/
-export function makeElementDraggable(el) {
-  el.addEventListener('mousedown', function(this: HTMLElement, e) {
-    var offsetX = e.clientX - parseInt(window.getComputedStyle(this).left);
-    var offsetY = e.clientY - parseInt(window.getComputedStyle(this).top);
-    
-    function mouseMoveHandler(e) {
-      e.preventDefault();
-      el.style.top = (e.clientY - offsetY) + 'px';
-      el.style.left = (e.clientX - offsetX) + 'px';
-    }
-
-    function reset() {
-      document.removeEventListener('mousemove', mouseMoveHandler);
-      document.removeEventListener('mouseup', reset);
-    }
-
-    document.addEventListener('mousemove', mouseMoveHandler);
-    document.addEventListener('mouseup', reset);
-  });
-}
-/******************** draggable end ************************/
-
-// add style to html element
-export function addCss(element: HTMLElement, style: { [key: string]: string }) {
-  for (const property in style) {
-    element.style[property] = style[property];
-  }
-}
-
 /********************** encode text begin *****************************/
 const alphabet = {
   "0": "Q",

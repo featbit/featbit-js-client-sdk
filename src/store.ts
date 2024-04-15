@@ -10,52 +10,20 @@ import {
 } from "./types";
 import {parseVariation} from "./utils";
 
-const DataStoreStorageKey = 'fbdatastore';
+const DataStoreStorageKey = 'fb-datastore';
 
 class Store {
-
-  private _isDevMode: boolean = false;
   private _userId: string | null = null;
 
   private _store: IDataStore = {
     featureFlags: {} as { [key: string]: IFeatureFlag }
   }
 
-  constructor() {
-    eventHub.subscribe(`devmode_ff_${FeatureFlagUpdateOperation.update}`, (data) => {
-      const updatedFfs = Object.keys(data).map(key => {
-        const changes = data[key];
-        const ff = this._store.featureFlags[key];
-        const updatedFf = Object.assign({}, ff, { variation: changes['newValue'], timestamp: Date.now() });
-        return updatedFf;
-      }).reduce((res, curr) => {
-        res.featureFlags[curr.id] = Object.assign({}, curr, { timestamp: Date.now() });
-        return res;
-      }, { featureFlags: {} });
-
-      this.updateStorageBulk(updatedFfs, `${DataStoreStorageKey}_dev_${this._userId}`, false);
-      this._loadFromStorage();
-    });
-
-    eventHub.subscribe(`devmode_ff_${FeatureFlagUpdateOperation.createDevData}`, () => {
-      localStorage.removeItem(`${DataStoreStorageKey}_dev_${this._userId}`);
-      this._loadFromStorage();
-      eventHub.emit(`devmode_ff_${FeatureFlagUpdateOperation.devDataCreated}`, this._store.featureFlags);
-    });
-  }
+  constructor() { }
 
   set userId(id: string) {
     this._userId = id;
     this._loadFromStorage();
-  }
-
-  set isDevMode(devMode: boolean) {
-    this._isDevMode = devMode;
-    this._loadFromStorage();
-  }
-
-  get isDevMode() {
-    return this._isDevMode;
   }
 
   getFeatureFlag(key: string): IFeatureFlag {
@@ -83,14 +51,11 @@ class Store {
   }
 
   setFullData(data: IDataStore) {
-    if (!this._isDevMode) {
-      this._store = {
-        featureFlags: {} as { [key: string]: IFeatureFlag }
-      };
+    this._store = {
+      featureFlags: {} as { [key: string]: IFeatureFlag }
+    };
 
-      this._dumpToStorage(this._store);
-    }
-      
+    this._dumpToStorage(this._store);
     this.updateBulkFromRemote(data);
   }
 
@@ -105,10 +70,6 @@ class Store {
     try {
       if (dataStoreStr && dataStoreStr.trim().length > 0) {
         store = JSON.parse(dataStoreStr);
-      } else if (this.isDevMode || storageKey.indexOf('_dev_') === -1) {
-        store = {
-          featureFlags: {} as { [key: string]: IFeatureFlag }
-        };
       }
     } catch (err) {
       logger.logDebug(`error while loading local data store: ${storageKey}` + err);
@@ -133,10 +94,8 @@ class Store {
 
   updateBulkFromRemote(data: IDataStore) {
     const storageKey = `${DataStoreStorageKey}_${this._userId}`;
-    const devStorageKey = `${DataStoreStorageKey}_dev_${this._userId}`;
 
     this.updateStorageBulk(data, storageKey, false);
-    this.updateStorageBulk(data, devStorageKey, true);
 
     this._loadFromStorage();
   }
@@ -154,29 +113,16 @@ class Store {
       localStorage.setItem(storageKey, JSON.stringify(store));
       return;
     }
-    const storageKey = this._isDevMode ? `${DataStoreStorageKey}_dev_${this._userId}` : `${DataStoreStorageKey}_${this._userId}`;
+    const storageKey = `${DataStoreStorageKey}_${this._userId}`;
     localStorage.setItem(storageKey, JSON.stringify(this._store));
   }
 
   private _loadFromStorage(): void {
     try {
-      const storageKey = this._isDevMode ? `${DataStoreStorageKey}_dev_${this._userId}` : `${DataStoreStorageKey}_${this._userId}`;
+      const storageKey = `${DataStoreStorageKey}_${this._userId}`;
       let dataStoreStr = localStorage.getItem(storageKey);
 
       let shouldDumpToStorage = false;
-      if (this._isDevMode) {
-        try {
-          const devData = JSON.parse(dataStoreStr!);
-
-          if (devData === null || Object.keys(devData.featureFlags).length === 0) {
-            shouldDumpToStorage = true;
-            dataStoreStr = localStorage.getItem(`${DataStoreStorageKey}_${this._userId}`);
-          }
-        } catch (err) {
-          shouldDumpToStorage = true;
-          dataStoreStr = localStorage.getItem(`${DataStoreStorageKey}_${this._userId}`);
-        }
-      }
 
       if (dataStoreStr && dataStoreStr.trim().length > 0) {
         // compare _store and dataStoreStr data and send notification if different

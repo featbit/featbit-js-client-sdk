@@ -1,4 +1,3 @@
-import devMode from "./devmode";
 import {eventHub} from "./events";
 import {logger} from "./logger";
 import store from "./store";
@@ -66,7 +65,6 @@ export class FB {
   private _option: IOption = {
     secret: '',
     api: '',
-    devModePassword: '',
     enableDataSync: true,
     appType: 'javascript'
   };
@@ -187,18 +185,6 @@ export class FB {
     await this.bootstrap(this._option.bootstrap, isUserChanged);
   }
 
-  activateDevMode(password: string){
-    devMode.activateDevMode(password);
-  }
-
-  openDevModeEditor() {
-    devMode.openEditor();
-  }
-
-  quitDevMode() {
-    devMode.quit();
-  }
-
   async logout(): Promise<IUser> {
     const anonymousUser = createOrGetAnonymousUser();
     await this.identify(anonymousUser);
@@ -234,16 +220,12 @@ export class FB {
       }catch(err) {
         logger.log('data sync error', err);
       }
-
-      store.isDevMode = !!store.isDevMode;
     }
 
     if (!this._readyEventEmitted) {
       this._readyEventEmitted = true;
       eventHub.emit('ready', mapFeatureFlagsToFeatureFlagBaseList(store.getFeatureFlags()));
     }
-
-    devMode.init(this._option.devModePassword || uuid());
   }
 
   private async dataSync(forceFullFetch?: boolean): Promise<any> {
@@ -339,9 +321,5 @@ const variationWithInsightBuffer = (key: string, defaultResult: string | boolean
   return variation;
 }
 
-const client = new FB();
-window['activateFeatbitDevMode'] = (password: string) => client.activateDevMode(password);
-window['quitFeatbitDevMode'] = () => client.quitDevMode();
-
-export default client;
+export default new FB();
 
