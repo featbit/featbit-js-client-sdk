@@ -107,15 +107,13 @@ export function validateOption(option: IOption): string | null {
     return OptionMessages.mandatory('option')
   }
 
-  const { api, streamingUri, eventsUri, secret, anonymous, user, enableDataSync } = option;
+  const { streamingUri, eventsUri, secret, anonymous, user, enableDataSync } = option;
 
-  const apiMissing = isNullOrUndefinedOrWhiteSpace(api);
   const streamingUriMissing = isNullOrUndefinedOrWhiteSpace(streamingUri);
   const eventsUriMissing = isNullOrUndefinedOrWhiteSpace(eventsUri);
 
-  if (enableDataSync && (apiMissing || streamingUriMissing || eventsUriMissing))
+  if (enableDataSync && (streamingUriMissing || eventsUriMissing))
   {
-    if (apiMissing) {
       if (eventsUriMissing) {
         return OptionMessages.partialEndpoint('eventsUri');
       }
@@ -123,13 +121,6 @@ export function validateOption(option: IOption): string | null {
       if (streamingUriMissing) {
         return OptionMessages.partialEndpoint('streamingUri');
       }
-
-      if (eventsUriMissing && streamingUriMissing) {
-        return OptionMessages.partialEndpoint('api');
-      }
-    } else {
-      console.warn(`You're using the deprecated api option, please use streamingUri and eventsUri instead`);
-    }
   }
 
   if (enableDataSync && isNullOrUndefinedOrWhiteSpace(secret)) {

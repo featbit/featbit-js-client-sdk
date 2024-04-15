@@ -163,14 +163,6 @@ export class FB {
       }
     };
 
-    if (isNullOrUndefinedOrWhiteSpace(this._option.streamingUri)) {
-      this._option.streamingUri = this._option.api?.replace(/^http/, 'ws');
-    }
-
-    if (isNullOrUndefinedOrWhiteSpace(this._option.eventsUri)) {
-      this._option.eventsUri = this._option.api;
-    }
-
     if (this._option.enableDataSync) {
       networkService.init(this._option.streamingUri!, this._option.eventsUri!, this._option.secret, this._option.appType!);
     }
