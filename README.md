@@ -1,3 +1,8 @@
+> **Deprecated**
+>
+> The current version of this SDK is deprecated due to rename of the package, please use the new package [@featbit/js-client-sdk](https://github.com/featbit/featbit-js-client-sdk)
+
+
 # FeatBit Client-Side SDK for JavaScript
 
 ## Introduction
