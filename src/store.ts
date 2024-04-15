@@ -93,7 +93,7 @@ class Store {
   }
 
   updateBulkFromRemote(data: IDataStore) {
-    const storageKey = `${DataStoreStorageKey}_${this._userId}`;
+    const storageKey = `${DataStoreStorageKey}-${this._userId}`;
 
     this.updateStorageBulk(data, storageKey, false);
 
@@ -109,17 +109,17 @@ class Store {
 
   private _dumpToStorage(store?: IDataStore, localStorageKey?: string): void {
     if (store) {
-      const storageKey = localStorageKey || `${DataStoreStorageKey}_${this._userId}`;
+      const storageKey = localStorageKey || `${DataStoreStorageKey}-${this._userId}`;
       localStorage.setItem(storageKey, JSON.stringify(store));
       return;
     }
-    const storageKey = `${DataStoreStorageKey}_${this._userId}`;
+    const storageKey = `${DataStoreStorageKey}-${this._userId}`;
     localStorage.setItem(storageKey, JSON.stringify(this._store));
   }
 
   private _loadFromStorage(): void {
     try {
-      const storageKey = `${DataStoreStorageKey}_${this._userId}`;
+      const storageKey = `${DataStoreStorageKey}-${this._userId}`;
       let dataStoreStr = localStorage.getItem(storageKey);
 
       let shouldDumpToStorage = false;

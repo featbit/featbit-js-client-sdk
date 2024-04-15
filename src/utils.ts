@@ -127,9 +127,9 @@ export function validateOption(option: IOption): string | null {
       if (eventsUriMissing && streamingUriMissing) {
         return OptionMessages.partialEndpoint('api');
       }
+    } else {
+      console.warn(`You're using the deprecated api option, please use streamingUri and eventsUri instead`);
     }
-  } else {
-    return `You're using the deprecated api option, please use streamingUri and eventsUri instead`;
   }
 
   if (enableDataSync && isNullOrUndefinedOrWhiteSpace(secret)) {
