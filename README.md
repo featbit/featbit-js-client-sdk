@@ -67,7 +67,7 @@ fbClient.on('ff_update:YOUR_FEATURE_KEY', (change) => {
 ## Examples
 
 - [Vue](https://github.com/featbit/featbit-samples/tree/main/samples/dino-game/interactive-demo-vue)
-- [React](https://github.com/featbit/featbit-samples/tree/main/samples/dino-game/interactive-demo-react)
+- For how to use FeatBit with React, please refer to the [react-client-sdk](https://github.com/featbit/featbit-react-client-sdk)
 
 ## SDK
 
@@ -78,7 +78,8 @@ Before initializing the SDK, you need to get the client-side env secret of your 
 ```javascript
 const option = {
   secret: "your env secret",
-  api:"http://localhost:5100", // the Streaming URL
+  streamingUri:"ws://localhost:5100",
+  eventsUri:"http://localhost:5100",
   user: {
     name: "Bot",
     keyId: "bot-id",
@@ -97,7 +98,8 @@ fbClient.init(option);
 The user has three properties:
 - name(**requried**):  The user's name, useful when viewing users in the portal.
 - keyId(**requried**): The unique user identifier.
-- api: The streaming URL.
+- streamingUri: The streaming URL.
+- eventsUri: The events URL.
 - customizedProperties(**optional**): Any other customized properties. Users can be targeted by these customized properties. Here is the format definition:
 ```json
  [
@@ -110,16 +112,16 @@ The user has three properties:
 
 This table lists all available options
 
-| Options               | Defaults                | Description                                                                                                                                                                                              |
-|-----------------------|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| secret (**required**) | -                       | The client side secret of your environment.                                                                                                                                                              |
-| user   (**required**) | -                       | The user connected to your APP, can be ignored if anonymous equals to true.                                                                                                                              |
-| anonymous             | `false`                 | Set to true if you want to use a anonymous user, which is the case before user login to your APP. If that is your case, the user can be set later with the identify method after the user has logged in. |
-| enableDataSync        | `true`                  | Set to false if you do not want to sync data with remote server, in this case feature flags must be set to bootstrap option or be passed to the method bootstrap.                                        |
-| bootstrap             | `[ ]`                   | Init the SDK with feature flags, this will trigger the ready event immediately instead of requesting from the remote.                                                                                    |
-| api                   | `http://localhost:5100` | The evaluation server streaming URL.                                                                                                                                                                     |
-| appType               | `javascript`            | The app type.                                                                                                                                                                                            |
-| devModePassword       | `''`                    | If set, the developer mode is enabled. To activate it, you need to call the method activateDevMode with password.                                                                                        |
+| Options               | Defaults     | Description                                                                                                                                                                                              |
+|-----------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| secret (**required**) | -            | The client side secret of your environment.                                                                                                                                                              |
+| user   (**required**) | -            | The user connected to your APP, can be ignored if anonymous equals to true.                                                                                                                              |
+| anonymous             | `false`      | Set to true if you want to use a anonymous user, which is the case before user login to your APP. If that is your case, the user can be set later with the identify method after the user has logged in. |
+| enableDataSync        | `true`       | Set to false if you do not want to sync data with remote server, in this case feature flags must be set to bootstrap option or be passed to the method bootstrap.                                        |
+| bootstrap             | `[ ]`        | Init the SDK with feature flags, this will trigger the ready event immediately instead of requesting from the remote.                                                                                    |
+| streamingUri          | ``           | The evaluation server streaming URL.                                                                                                                                                                     |
+| eventsUri             | ``           | The evaluation server events URL.                                                                                                                                                                        |
+| appType               | `javascript` | The app type.                                                                                                                                                                                            |
 
 ### Bootstrap
 If you already have the feature flags available, two ways to pass them to the SDK instead of requesting from the remote.
@@ -135,8 +137,8 @@ const option = {
     id: string,
     // variation value
     variation: string,
-    // variation data type, string will used if not specified
-    variationType: string
+    // variation data type, string will be used if not specified
+    variationType: VariationDataType
   }],
   ...
 }
@@ -154,7 +156,7 @@ const featureflags = [{
   // variation value
   variation: string,
   // variation data type, string will used if not specified
-  variationType: string
+  variationType: VariationDataType
 }]
 
 fbClient.bootstrap(featureflags);
@@ -245,35 +247,6 @@ We can manually call the method logout, which will switch the current user back 
 
 ```javascript
 fbClient.logout(user);
-```
-
-### Developer mode
-Developer mode is a powerful tool we created allowing developers to manipulate the feature flags locally instead of modifying them on remote server. **This will not change the remote values**.
-
-To activate the developer mode, the activateDevMode method should be called as following, the password parameter is
-
-```javascript
-// This will activate developer mode, you should be able to see an icon on bottom right of the screen. 
-// PASSWORD is mandatory and it should be the same as the value passed to option
-fbClient.activateFeatbitDevMode('PASSWORD');
-
-// or
-// this method is equivalent to fbClient.activateDevMode('PASSWORD')
-window.activateFeatbitDevMode('PASSWORD'); 
-```
-
-To open the developer mode editor or quit developer mode, use the following code:
-
-```javascript
-// The method will open the developer mode editor, or you can just click on the developer mode icon
-fbClient.openDevModeEditor();
-
-// call this method to quit developer mode
-fbClient.quitDevMode();
-
-// or
-// this is equivalent to fbClient.quitDevMode()
-window.quitFeatbitDevMode();
 ```
 
 ### Data synchronization
