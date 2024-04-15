@@ -1,7 +1,7 @@
 import { websocketReconnectTopic } from "./constants";
 import { eventHub } from "./events";
 import { logger } from "./logger";
-import { IExptMetricSetting, IInsight, InsightType, IStreamResponse, IUser, IZeroCode } from "./types";
+import { IInsight, InsightType, IStreamResponse, IUser } from "./types";
 import { generateConnectionToken } from "./utils";
 import throttleUtil from "./throttleutil";
 
@@ -182,32 +182,6 @@ class NetworkService {
       logger.logDebug(err);
     }
   })
-
-  async getActiveExperimentMetricSettings(): Promise<IExptMetricSetting[] | []> {
-    const exptMetricSettingLocalStorageKey = 'fb_expt_metric';
-    try {
-        const result = await get(`${this.api}/api/public/sdk/experiments`, { Authorization: this.secret! });
-
-        localStorage.setItem(exptMetricSettingLocalStorageKey, JSON.stringify(result.data));
-        return result.data;
-    } catch (error) {
-        logger.log(error);
-        return !!localStorage.getItem(exptMetricSettingLocalStorageKey) ? JSON.parse(localStorage.getItem(exptMetricSettingLocalStorageKey) as string) : [];
-    }
-}
-
-async getZeroCodeSettings(): Promise<IZeroCode[] | []> {
-    const zeroCodeSettingLocalStorageKey = 'fb_zcs';
-    try {
-        const result = await get(`${this.api}/api/public/sdk/zero-code`, { Authorization: this.secret! });
-
-        localStorage.setItem(zeroCodeSettingLocalStorageKey, JSON.stringify(result.data));
-        return result.data;
-    } catch (error) {
-      logger.log(error);
-        return !!localStorage.getItem(zeroCodeSettingLocalStorageKey) ? JSON.parse(localStorage.getItem(zeroCodeSettingLocalStorageKey) as string) : [];
-    }
-}
 }
 
 export const networkService = new NetworkService();

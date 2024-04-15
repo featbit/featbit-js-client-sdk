@@ -17,7 +17,7 @@ import {
   StreamResponseEventType,
   VariationDataType
 } from "./types";
-import {generateGuid, parseVariation, serializeUser, uuid, validateOption, validateUser} from "./utils";
+import {generateGuid, parseVariation, serializeUser, validateOption, validateUser} from "./utils";
 import {Queue} from "./queue";
 import {
   featureFlagEvaluatedBufferTopic,
@@ -26,7 +26,6 @@ import {
   insightsTopic,
   websocketReconnectTopic
 } from "./constants";
-import autoCapture from "./autocapture";
 
 
 function createOrGetAnonymousUser(): IUser {
@@ -38,7 +37,7 @@ function createOrGetAnonymousUser(): IUser {
       c_start = c_start + c_name.length + 1
       let c_end = document.cookie.indexOf(";", c_start)
       if (c_end == -1) c_end = document.cookie.length
-      sessionId = unescape(document.cookie.substring(c_start, c_end));
+      sessionId = decodeURI(document.cookie.substring(c_start, c_end));
     }
   }
 
@@ -159,11 +158,6 @@ export class FB {
     }
     
     await this.identify(option.user || createOrGetAnonymousUser());
-
-    // TODO uncomment the following code
-    // if (this._option.enableDataSync) {
-    //   autoCapture.init();
-    // }
   }
 
   async identify(user: IUser): Promise<void> {
