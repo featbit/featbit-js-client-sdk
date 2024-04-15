@@ -17,6 +17,10 @@ class EventEmitter {
     };
   }
 
+  public unsubscribe(name: string, cb: Function) {
+    this.events[name] && this.events[name].splice(this.events[name].indexOf(cb) >>> 0, 1);
+  }
+
   public emit(name: string, ...args: any[]): void {
     (this.events[name] || []).forEach(fn => fn(...args));
   }

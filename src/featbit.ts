@@ -140,6 +140,10 @@ export class FB {
     eventHub.subscribe(name, cb);
   }
 
+  off(name: string, cb: Function) {
+    eventHub.unsubscribe(name, cb);
+  }
+
   waitUntilReady(): Promise<IFeatureFlagBase[]> {
     return this._readyPromise;
   }
