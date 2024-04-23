@@ -1,3 +1,7 @@
+> **Attention**
+>
+> If you are using the v1 or v2 of the SDK, please refer to this [doc](https://github.com/featbit/featbit-js-client-sdk/tree/v2)
+
 # FeatBit Client SDK for JavaScript
 
 ## Introduction
