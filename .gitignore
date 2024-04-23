@@ -1,7 +1,5 @@
 node_modules
-umd
-esm
-commonjs
+dist
 .idea
-tests
 .vscode
+coverage

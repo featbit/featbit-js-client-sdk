@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="./umd/featbit-js-client-sdk.js"></script>
+    <title>featbit.co</title>
+</head>
+
+<body style="background-color: rgb(217 239 233);">
+<h1 style="text-align: center">FeatBit JavaScript SDK Demo</h1>
+<script type="text/javascript">
+    const sdkKey = 'xxxxxx';
+    const flagKey = 'robot';
+
+    window.onload = async (event) => {
+        const logger = new BasicLogger({
+            level: 'debug',
+            destination: console.log
+        });
+
+        const user = new UserBuilder('anonymous1').name('anonymous1').build();
+
+        const initialFlags = [
+            {
+                "id": "robot",
+                "variation": "AlphaGo",
+                // variation data type, string will be used if not specified
+                variationType: 'string'
+            },
+            {
+                "id": "用户信息模块",
+                "variation": "v2.0.0"
+            },
+            {
+                "id": "user_info_db_migration",
+                "variation": "azure"
+            }
+        ];
+
+        const client = new FbClientBuilder()
+            .sdkKey(sdkKey)
+            .streamingUri('wss://app-eval.featbit.co')
+            .eventsUri('https://app-eval.featbit.co')
+            .user(user)
+            .logger(logger)
+            .bootstrap(initialFlags)
+            .build();
+
+        const changeHandler = async (flagKeys) => {
+            flagValue = client.variation(flagKey, false);
+            console.log(`flagKey=${flagKey}; flagValue=${flagValue}`);
+        };
+
+        client.on('update', changeHandler);
+
+        client.on(`update:${flagKey}`, (key) => {
+            console.log(key);
+        });
+
+        await client.waitForInitialization();
+        let flagValue = client.variation(flagKey, 'DeepBlue');
+
+        setTimeout(() => {
+            client.track('aaa');
+        }, 5000);
+
+        console.log(`flagKey=${flagKey}; flagValue=${flagValue}`);
+
+        setTimeout(async ()=>{
+            await client.identify(new UserBuilder('thekey').name('thename').build())
+        }, 5000)
+    }
+</script>
+</body>
+
+</html>
