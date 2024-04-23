@@ -1,3 +1,7 @@
+> **Deprecated**
+>
+> We have totally reimplemented the SDK to adapt to NextJs projects, for the new version, please refer to [@featbit/js-client-sdk](https://github.com/featbit/featbit-js-client-sdk)
+
 # FeatBit Client-Side SDK for JavaScript
 
 ## Introduction
