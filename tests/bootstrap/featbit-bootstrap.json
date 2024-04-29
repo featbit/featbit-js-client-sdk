@@ -1,0 +1,17 @@
+[
+  {
+    "id": "flag1",
+    "variationType": "boolean",
+    "variation": "true",
+    "variationOptions": [
+      {
+        "id": "94091e92-5d7e-4da3-9732-87424838b070",
+        "value": "true"
+      },
+      {
+        "id": "fea6de2c-b045-4d9b-8a5c-84271aa2c93f",
+        "value": "false"
+      }
+    ]
+  }
+]

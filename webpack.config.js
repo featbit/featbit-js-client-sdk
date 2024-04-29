@@ -3,8 +3,8 @@ const package = require('./package.json');
 
 const baseConfig = {
   entry: {
-    [`featbit-js-client-sdk-${package.version}`]: './src/umd.ts',
-    [`featbit-js-client-sdk`]: './src/umd.ts'
+    [`featbit-js-client-sdk-${package.version}`]: './src/index.ts',
+    [`featbit-js-client-sdk`]: './src/index.ts'
   },
   devtool: 'source-map',
   module: {
@@ -29,7 +29,7 @@ const baseConfig = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    path: path.resolve(__dirname, 'umd'),
+    path: path.resolve(__dirname, 'dist', 'umd'),
     filename: `[name].js`,
     libraryTarget: 'umd',
     //library: 'FFCJsClient',
@@ -44,7 +44,18 @@ const baseConfig = {
 
 const config = {
   ...baseConfig, output: {
-    path: path.resolve(__dirname, 'umd'),
+    path: path.resolve(__dirname, 'dist', 'umd'),
+    filename: `[name].js`,
+    libraryTarget: 'umd',
+    umdNamedDefine: true,
+    // prevent error: `Uncaught ReferenceError: self is not define`
+    globalObject: 'this',
+  }
+};
+
+const configDemo = {
+  ...baseConfig, output: {
+    path: path.resolve(__dirname, 'examples', 'web-app', 'umd'),
     filename: `[name].js`,
     libraryTarget: 'umd',
     umdNamedDefine: true,
@@ -54,5 +65,6 @@ const config = {
 };
 
 module.exports = [
-  config
+  config,
+  configDemo
 ];
