@@ -24,7 +24,7 @@ export interface IStore {
    *   The current user. The actual type of this parameter is
    *   {@link IUser}.
    */
-  identify(user: IUser): void;
+  identify(user: IUser): Promise<void>;
 
   /**
    * Get the current user of the store.
@@ -66,11 +66,8 @@ export interface IStore {
    *   An object in which each key is the "namespace" of a collection (e.g. `"features"`) and
    *   the value is an object that maps keys to entities. The actual type of this parameter is
    *   `interfaces.FullDataSet<VersionedData>`.
-   *
-   * @param callback
-   *   Will be called when the store has been initialized.
    */
-  init(allData: IStoreDataStorage, callback: () => void): void;
+  init(allData: IStoreDataStorage): Promise<void>;
 
   /**
    * Add an entity or update an existing entity.
@@ -84,11 +81,8 @@ export interface IStore {
    *   should check the `version` property of this object, and should *not* overwrite any
    *   existing data if the existing `version` is greater than or equal to that value.
    *   The actual type of this parameter is {@link IKeyedStoreItem}.
-   *
-   * @param callback
-   *   Will be called after the upsert operation is complete.
    */
-  upsert(kind: IDataKind, data: IKeyedStoreItem, callback: () => void): void;
+  upsert(kind: IDataKind, data: IKeyedStoreItem): Promise<void>;
 
   /**
    * Tests whether the store is initialized.

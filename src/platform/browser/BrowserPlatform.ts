@@ -3,7 +3,7 @@ import { IInfo } from "../IInfo";
 import { IRequests } from "../requests";
 import { IOptions } from "../../options/IOptions";
 import BrowserInfo from "./BrowserInfo";
-import BrowserRequests from "./BrowserRequests";
+import { BrowserRequests } from "./BrowserRequests";
 import { IWebSocketWithEvents } from "../IWebSocket";
 import BrowserWebSocket from "./BrowserWebSocket";
 

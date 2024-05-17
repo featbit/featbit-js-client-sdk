@@ -13,7 +13,7 @@
 <body style="background-color: rgb(217 239 233);">
 <h1 style="text-align: center">FeatBit JavaScript SDK Demo</h1>
 <script type="text/javascript">
-    const sdkKey = 'xxxxxx';
+    const sdkKey = 'Obg68EqYZk27JTxphPgy7At1aJ8GaAtEaIA1fb3IpuEA';
     const flagKey = 'robot';
 
     window.onload = async (event) => {
@@ -51,7 +51,7 @@
             .build();
 
         const changeHandler = async (flagKeys) => {
-            flagValue = client.variation(flagKey, false);
+            const flagValue = client.variation(flagKey, false);
             console.log(`flagKey=${flagKey}; flagValue=${flagValue}`);
         };
 

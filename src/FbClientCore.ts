@@ -63,8 +63,6 @@ export class FbClientCore implements IFbClientCore {
 
   private initializedPromise?: Promise<IFbClientCore>;
 
-  private logger?: ILogger;
-
   private config: Configuration;
 
   private dataSourceUpdates?: DataSourceUpdates;
@@ -74,6 +72,8 @@ export class FbClientCore implements IFbClientCore {
   private onFailed: (err: Error) => void;
 
   private onReady: () => void;
+
+  logger?: ILogger;
 
   constructor(
     private options: IOptions,
@@ -104,7 +104,7 @@ export class FbClientCore implements IFbClientCore {
   private async init(platform: IPlatform, onUpdate: (keys: string[]) => void, hasEventListeners: () => boolean) {
     const clientContext = new ClientContext(this.config.sdkKey, this.config, platform);
     this.store = this.config.storeFactory(clientContext);
-    this.store.identify(this.config.user);
+    await this.store.identify(this.config.user);
     this.dataSourceUpdates = new DataSourceUpdates(this.store, hasEventListeners, onUpdate);
     this.evaluator = new Evaluator(this.store);
 

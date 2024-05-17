@@ -16,8 +16,8 @@ describe('given a JsonBootstrapProvider', () => {
   it('populate store', async () => {
     const provider = new JsonBootstrapProvider(testData as unknown as IFlagBase[]);
     const user = new UserBuilder('anonymous').build();
-    const store: IStore = new InMemoryStore({});
-    store.identify(user);
+    const store: IStore = new InMemoryStore();
+    await store.identify(user);
 
     const dataSourceUpdates = new DataSourceUpdates(store, () => false, () => {})
 

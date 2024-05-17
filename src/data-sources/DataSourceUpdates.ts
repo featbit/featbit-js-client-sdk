@@ -27,24 +27,22 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
     }
 
     const checkForChanges = this.hasEventListeners();
-    const doInit = (oldData?: IStoreDataStorage) => {
-      this.store.init(allData, () => {
-        // Defer change events so they execute after the callback.
-        Promise.resolve().then(() => {
-          if (checkForChanges) {
-            const updatedKeys = Object.keys(allData)
-              .flatMap((namespace) => {
-                const oldDataForKind = oldData?.[namespace] || {};
-                const newDataForKind = allData[namespace];
-                const mergedData = {...oldDataForKind, ...newDataForKind};
-                return Object.keys(mergedData)
-                  .filter((key: string) => this.isUpdated(oldDataForKind && oldDataForKind[key], newDataForKind && newDataForKind[key]));
-              });
-            updatedKeys.length > 0 && this.onChange(updatedKeys);
-          }
-        });
-        callback?.();
+    const doInit = async (oldData?: IStoreDataStorage) => {
+      await this.store.init(allData);
+      Promise.resolve().then(() => {
+        if (checkForChanges) {
+          const updatedKeys = Object.keys(allData)
+            .flatMap((namespace) => {
+              const oldDataForKind = oldData?.[namespace] || {};
+              const newDataForKind = allData[namespace];
+              const mergedData = {...oldDataForKind, ...newDataForKind};
+              return Object.keys(mergedData)
+                .filter((key: string) => this.isUpdated(oldDataForKind && oldDataForKind[key], newDataForKind && newDataForKind[key]));
+            });
+          updatedKeys.length > 0 && this.onChange(updatedKeys);
+        }
       });
+      callback?.();
     };
 
     if (checkForChanges) {
@@ -67,17 +65,15 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
 
     const {key} = data;
     const checkForChanges = this.hasEventListeners();
-    const doUpsert = (oldItem?: IStoreItem) => {
-      this.store.upsert(kind, data, () => {
-        // Defer change events so they execute after the callback.
-        Promise.resolve().then(() => {
-          if (checkForChanges && this.isUpdated(oldItem, data[key])) {
-            this.onChange([key]);
-          }
-        });
-
-        callback?.();
+    const doUpsert = async (oldItem?: IStoreItem) => {
+      await this.store.upsert(kind, data);
+      Promise.resolve().then(() => {
+        if (checkForChanges && this.isUpdated(oldItem, data[key])) {
+          this.onChange([key]);
+        }
       });
+
+      callback?.();
     };
     if (checkForChanges) {
       const item = this.store.get(kind, key);

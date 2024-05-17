@@ -1,3 +1,18 @@
+export interface IFbDevice {
+  manufacturer?: string;
+  model?: string;
+  storageBytes?: string;
+  memoryBytes?: string;
+  os?: {
+    /**
+     * The family of operating system.
+     */
+    family?: string;
+    name?: string;
+    version?: string;
+  };
+}
+
 /**
  * Information about the platform of the SDK and the environment it is executing.
  */
@@ -31,6 +46,12 @@ export interface IPlatformData {
    * Any additional attributes associated with the platform.
    */
   additional?: Record<string, string>;
+
+  /**
+   * Device hardware information. Should be populated when available. Not all
+   * platforms will have this data.
+   */
+  fbDevice?: IFbDevice;
 }
 
 export interface ISdkData {

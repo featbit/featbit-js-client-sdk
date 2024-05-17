@@ -2,10 +2,11 @@ import { FbClientCore } from "../../FbClientCore";
 import { IOptions } from "../../options/IOptions";
 import { BasicLogger } from "../../logging/BasicLogger";
 import { EventEmitter } from "../../utils/EventEmitter";
-import SafeLogger from "../../logging/SafeLogger";
+import { SafeLogger } from "../../logging/SafeLogger";
 import { Emits } from "../../utils/Emits";
 import { IEventEmitter } from "../../utils/IEventEmitter";
 import BrowserPlatform from "./BrowserPlatform";
+import LocalStorageStore from "./LocalStorageStore";
 
 /**
  * @ignore
@@ -23,8 +24,13 @@ class FbClient extends FbClientCore {
 
     const emitter = new EventEmitter(logger);
 
+    let { store } = options;
+    if (!store) {
+      store = new LocalStorageStore(options);
+    }
+
     super(
-      {...options, logger},
+      {...options, logger, store },
       new BrowserPlatform({...options, logger}),
       {
         onError: (err: Error) => {

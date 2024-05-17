@@ -18,4 +18,5 @@ export * from './IContextProperty';
 export * from './IDataKind';
 export * from './IFbClient';
 export * from './IVersionedData';
+export * from './FbClientCore';
 

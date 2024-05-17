@@ -16,7 +16,6 @@ import { NullBootstrapProvider } from "./bootstrap/NullBootstrapProvider";
 import { EmptyString } from "./constants";
 import { DataSyncModeEnum } from "./data-sync/DataSyncMode";
 import { IUser } from "./options/IUser";
-import LocalStorageStore from "./platform/browser/LocalStorageStore";
 import { JsonBootstrapProvider } from "./bootstrap";
 
 // Once things are internal to the implementation of the SDK we can depend on
@@ -63,7 +62,7 @@ export const defaultValues: IValidatedOptions = {
   maxEventsInQueue: 10000,
   pollingInterval: 30000,
   offline: false,
-  store: (options: IOptions) => new LocalStorageStore(options),
+  store: (options: IOptions) => new InMemoryStore(),
   bootstrap: undefined,
   user: undefined,
 };

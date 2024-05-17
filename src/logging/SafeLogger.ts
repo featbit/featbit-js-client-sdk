@@ -18,7 +18,7 @@ const loggerRequirements = {
  * message to the SDK's default logger, and we can at least partly guard against the latter by
  * checking for the presence of required methods at configuration time.
  */
-export default class SafeLogger implements ILogger {
+export class SafeLogger implements ILogger {
   private logger: ILogger;
 
   private fallback: ILogger;
