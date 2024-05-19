@@ -41,7 +41,7 @@ export class FbClientBuilder {
     return new FbClient(this._options);
   }
 
-  platform(platform: IPlatform): FbClientBuilder {
+  platform(platform: IPlatform | undefined): FbClientBuilder {
     this._platform = platform;
     return this;
   }
