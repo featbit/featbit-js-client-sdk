@@ -9,6 +9,7 @@ import { ILogger } from "./logging/ILogger";
 import { DataSyncModeEnum } from "./data-sync/DataSyncMode";
 import { IUser } from "./options/IUser";
 import { IFlagBase } from "./evaluation";
+import { IPlatform } from "./platform";
 
 /**
  * Creates an instance of the FeatBit client.
@@ -27,6 +28,7 @@ import { IFlagBase } from "./evaluation";
  */
 export class FbClientBuilder {
   private _options: IOptions;
+  private _platform: IPlatform | undefined;
 
   constructor(options?: IOptions) {
     this._options = options ?? {};
@@ -37,6 +39,11 @@ export class FbClientBuilder {
    */
   build(): IFbClient {
     return new FbClient(this._options);
+  }
+
+  platform(platform: IPlatform): FbClientBuilder {
+    this._platform = platform;
+    return this;
   }
 
   /**

@@ -7,6 +7,7 @@ import { Emits } from "../../utils/Emits";
 import { IEventEmitter } from "../../utils/IEventEmitter";
 import BrowserPlatform from "./BrowserPlatform";
 import LocalStorageStore from "./LocalStorageStore";
+import { IPlatform } from "../IPlatform";
 
 /**
  * @ignore
@@ -14,7 +15,7 @@ import LocalStorageStore from "./LocalStorageStore";
 class FbClient extends FbClientCore {
   emitter: IEventEmitter;
 
-  constructor(options: IOptions) {
+  constructor(options: IOptions, platform: IPlatform | undefined = undefined) {
     const fallbackLogger = new BasicLogger({
       level: 'none',
       destination: console.log
@@ -31,7 +32,7 @@ class FbClient extends FbClientCore {
 
     super(
       {...options, logger, store },
-      new BrowserPlatform({...options, logger}),
+      platform ?? new BrowserPlatform({...options, logger}),
       {
         onError: (err: Error) => {
           if (emitter.listenerCount('error')) {
