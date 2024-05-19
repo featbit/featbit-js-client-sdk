@@ -1,6 +1,6 @@
 {
   "name": "@featbit/js-client-sdk",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "https://github.com/featbit/featbit-js-client-sdk",
   "main": "./dist/esm/index.js",
   "module": "./dist/esm/index.js",
@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "prebuild": "node -p \"'export const version = \\\"' + require('./package.json').version + '\\\"; export const name = \\\"' + require('./package.json').name + '\\\";'\" > src/version.ts",
-    "build": "rimraf dist && tsc -p tsconfig.json && webpack --mode production",
+    "build": "rimraf dist && rimraf examples/web-app/umd && tsc -p tsconfig.json && webpack --mode production",
     "test": "npx jest --ci",
     "test-coverage": "npx jest --ci --coverage",
     "prepublishOnly": "npm run build"

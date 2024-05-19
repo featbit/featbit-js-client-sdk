@@ -38,7 +38,7 @@ export class FbClientBuilder {
    * Creates a new instance of the FeatBit client.
    */
   build(): IFbClient {
-    return new FbClient(this._options);
+    return new FbClient(this._options, this._platform);
   }
 
   platform(platform: IPlatform | undefined): FbClientBuilder {
