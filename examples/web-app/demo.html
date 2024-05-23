@@ -13,12 +13,20 @@
 <body style="background-color: rgb(217 239 233);">
 <h1 style="text-align: center">FeatBit JavaScript SDK Demo</h1>
 <script type="text/javascript">
-    const sdkKey = 'Obg68EqYZk27JTxphPgy7At1aJ8GaAtEaIA1fb3IpuEA';
+    function getRandomInt(max) {
+        return Math.floor(Math.random() * max);
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    const sdkKey = 'x5-p4nMlW0aLyzE5TpTtmwwvvdZpVB4Ey-aNea3wffFw';
     const flagKey = 'robot';
 
     window.onload = async (event) => {
         const logger = new BasicLogger({
-            level: 'debug',
+            level: 'none',
             destination: console.log
         });
 
@@ -43,36 +51,37 @@
 
         const client = new FbClientBuilder()
             .sdkKey(sdkKey)
-            .streamingUri('wss://app-eval.featbit.co')
-            .eventsUri('https://app-eval.featbit.co')
+            .streamingUri('ws://localhost:5100')
+            .eventsUri('http://localhost:5100')
             .user(user)
             .logger(logger)
             .bootstrap(initialFlags)
             .build();
 
-        const changeHandler = async (flagKeys) => {
-            const flagValue = client.variation(flagKey, false);
-            console.log(`flagKey=${flagKey}; flagValue=${flagValue}`);
-        };
-
-        client.on('update', changeHandler);
-
-        client.on(`update:${flagKey}`, (key) => {
-            console.log(key);
-        });
+        // const changeHandler = async (flagKeys) => {
+        //     const flagValue = client.variation(flagKey, false);
+        //     console.log(`flagKey=${flagKey}; flagValue=${flagValue}`);
+        // };
+        //
+        // client.on('update', changeHandler);
+        //
+        // client.on(`update:${flagKey}`, (key) => {
+        //     console.log(key);
+        // });
 
         await client.waitForInitialization();
-        let flagValue = client.variation(flagKey, 'DeepBlue');
 
-        setTimeout(() => {
-            client.track('aaa');
-        }, 5000);
-
-        console.log(`flagKey=${flagKey}; flagValue=${flagValue}`);
-
-        setTimeout(async ()=>{
-            await client.identify(new UserBuilder('thekey').name('thename').build())
-        }, 5000)
+        for (let i = 0; i < 100; i++) {
+            await client.identify(new UserBuilder(`thekey-${i}-${i}`).name(`thekey-${i}-${i}`).custom('age', i).build());
+            await sleep(100);
+            const flagValue = client.variation(flagKey, 'AAA');
+            console.log(`Iteration: ${i}: flagKey=${flagKey}; flagValue=${flagValue}`);
+            const r = getRandomInt(10);
+            if (r % 2 === 0) {
+                client.track('metric1');
+                console.log(`Iteration ${i}: converted`);
+            }
+        }
     }
 </script>
 </body>
