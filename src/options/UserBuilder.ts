@@ -22,7 +22,7 @@ export class UserBuilder {
   }
 
   custom(propertyName: string, value: string): UserBuilder {
-    this._custom?.push({ name: propertyName, value: value });
+    this._custom?.push({ name: propertyName, value: `${value}` });
     return this;
   }
 

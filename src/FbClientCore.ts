@@ -164,7 +164,8 @@ export class FbClientCore implements IFbClientCore {
       return;
     }
 
-    this.store!.identify(user);
+    this.config.user = user;
+    await this.store!.identify(user);
     this.dataSynchronizer!.identify(user);
     const [ flags ] = this.store!.all(DataKinds.Flags);
     if (Object.keys(flags).length === 0) {

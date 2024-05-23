@@ -157,7 +157,7 @@ export default class Configuration {
 
   public readonly bootstrapProvider: IBootstrapProvider = new NullBootstrapProvider();
 
-  public readonly user: IUser;
+  public user: IUser;
 
   public readonly storeFactory: (clientContext: IClientContext) => IStore;
 
