@@ -13,7 +13,7 @@ import { IDataSynchronizer } from "./data-sync/IDataSynchronizer";
 import DataKinds from "./store/DataKinds";
 import Evaluator from "./evaluation/Evaluator";
 import { ReasonKinds } from "./evaluation/ReasonKinds";
-import { ClientError } from "./errors";
+import { ClientError, TimeoutError } from "./errors";
 import Context from "./Context";
 import { IConvertResult, ValueConverters } from "./utils/ValueConverters";
 import { NullDataSynchronizer } from "./data-sync/NullDataSynchronizer";
@@ -187,7 +187,7 @@ export class FbClientCore implements IFbClientCore {
           'We will continue to initialize the FbClient, it still have a chance to get to work ' +
           'if it\'s a temporary network issue';
 
-        const error = new Error(msg);
+        const error = new TimeoutError(msg);
         this.state = ClientState.Failed;
         this.rejectionReason = error;
         this.initReject?.(error);

@@ -1,6 +1,6 @@
 {
   "name": "@featbit/js-client-sdk",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "description": "https://github.com/featbit/featbit-js-client-sdk",
   "main": "./dist/esm/index.js",
   "module": "./dist/esm/index.js",

@@ -33,6 +33,13 @@ export class ClientError extends Error {
   }
 }
 
+export class TimeoutError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'FeatBitTimeoutError';
+  }
+}
+
 export function isHttpRecoverable(status: number) {
   if (status >= 400 && status < 500) {
     return status === 400 || status === 408 || status === 429;

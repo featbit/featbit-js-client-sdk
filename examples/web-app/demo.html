@@ -21,7 +21,7 @@
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    const sdkKey = 'x5-p4nMlW0aLyzE5TpTtmwwvvdZpVB4Ey-aNea3wffFw';
+    const sdkKey = 'Obg68EqYZk27JTxphPgy7At1aJ8GaAtEaIA1fb3IpuEA';
     const flagKey = 'robot';
 
     window.onload = async (event) => {
@@ -51,37 +51,42 @@
 
         const client = new FbClientBuilder()
             .sdkKey(sdkKey)
-            .streamingUri('ws://localhost:5100')
-            .eventsUri('http://localhost:5100')
+            .streamingUri('wss://app-eval.featbit.co')
+            .eventsUri('https://app-eval.featbit.co')
             .user(user)
             .logger(logger)
             .bootstrap(initialFlags)
+            .startWaitTime(2000)
             .build();
 
-        // const changeHandler = async (flagKeys) => {
-        //     const flagValue = client.variation(flagKey, false);
-        //     console.log(`flagKey=${flagKey}; flagValue=${flagValue}`);
-        // };
-        //
-        // client.on('update', changeHandler);
-        //
-        // client.on(`update:${flagKey}`, (key) => {
-        //     console.log(key);
-        // });
+        const changeHandler = async (flagKeys) => {
+            const flagValue = client.variation(flagKey, false);
+            console.log(`flagKey=${flagKey}; flagValue=${flagValue}`);
+        };
 
-        await client.waitForInitialization();
+        client.on('update', changeHandler);
 
-        for (let i = 0; i < 100; i++) {
-            await client.identify(new UserBuilder(`thekey-${i}-${i}`).name(`thekey-${i}-${i}`).custom('age', i).build());
-            await sleep(100);
-            const flagValue = client.variation(flagKey, 'AAA');
-            console.log(`Iteration: ${i}: flagKey=${flagKey}; flagValue=${flagValue}`);
-            const r = getRandomInt(10);
-            if (r % 2 === 0) {
-                client.track('metric1');
-                console.log(`Iteration ${i}: converted`);
-            }
+        client.on(`update:${flagKey}`, (key) => {
+            console.log(key);
+        });
+
+        try {
+            await client.waitForInitialization();
+        } catch(e) {
+            console.error(e);
         }
+
+        // for (let i = 0; i < 100; i++) {
+        //     await client.identify(new UserBuilder(`thekey-${i}-${i}`).name(`thekey-${i}-${i}`).custom('age', i).build());
+        //     await sleep(100);
+        //     const flagValue = client.variation(flagKey, 'AAA');
+        //     console.log(`Iteration: ${i}: flagKey=${flagKey}; flagValue=${flagValue}`);
+        //     const r = getRandomInt(10);
+        //     if (r % 2 === 0) {
+        //         client.track('metric1');
+        //         console.log(`Iteration ${i}: converted`);
+        //     }
+        // }
     }
 </script>
 </body>
