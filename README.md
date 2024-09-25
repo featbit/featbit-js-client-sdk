@@ -103,7 +103,7 @@ const fbClient = new FbClientBuilder()
 #### FbClient Using Polling
 
 ```javascript
-import { FbClientBuilder, UserBuilder, DataSyncMode } from "@featbit/browser-server-sdk";
+import { FbClientBuilder, UserBuilder, DataSyncMode } from "@featbit/js-client-sdk";
 
 const user = new UserBuilder('a-unique-key-of-user')
     .name('bob')
@@ -111,7 +111,7 @@ const user = new UserBuilder('a-unique-key-of-user')
 
 const fbClient = new FbClientBuilder()
     .sdkKey("your_sdk_key")
-    .dataSyncMode(DataSyncMode.POLLING)
+    .dataSyncMode(DataSyncModeEnum.POLLING)
     .pollingUri('http://localhost:5100')
     .eventsUri("http://localhost:5100")
     .pollingInterval(10000)
