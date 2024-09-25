@@ -103,7 +103,7 @@ const fbClient = new FbClientBuilder()
 #### FbClient Using Polling
 
 ```javascript
-import { FbClientBuilder, UserBuilder, DataSyncMode } from "@featbit/js-client-sdk";
+import { FbClientBuilder, UserBuilder, DataSyncModeEnum } from "@featbit/js-client-sdk";
 
 const user = new UserBuilder('a-unique-key-of-user')
     .name('bob')
