@@ -19,5 +19,3 @@ export * from './IDataKind';
 export * from './IFbClient';
 export * from './IVersionedData';
 export * from './FbClientCore';
-
-export * from './version';

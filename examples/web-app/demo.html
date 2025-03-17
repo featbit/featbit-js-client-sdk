@@ -49,31 +49,6 @@
             }
         ];
 
-        class MyBrowserInfo {
-            get appType() {
-                return 'Browser-Client-SDK';
-            }
-
-            platformData() {
-                return {
-                    os: {},
-                    name: 'Browser',
-                    additional: {},
-                };
-            }
-
-            sdkData() {
-                return {
-                    name: name,
-                    version: version,
-                    userAgent: navigator.userAgent // YOU CAN REPLACE THIS VALUE BY WHATEVER VALUE THAT FITS YOUR NEED
-                };
-            }
-        }
-
-        const platform = new BrowserPlatform();
-        platform.info = new MyBrowserInfo();
-
         const client = new FbClientBuilder()
             .sdkKey(sdkKey)
             .streamingUri('wss://app-eval.featbit.co')
@@ -82,7 +57,6 @@
             .logger(logger)
             .bootstrap(initialFlags)
             .startWaitTime(2000)
-            .platform(platform)
             .build();
 
         const changeHandler = async (flagKeys) => {
