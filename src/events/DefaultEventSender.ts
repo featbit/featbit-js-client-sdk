@@ -32,7 +32,6 @@ export class DefaultEventSender implements IEventSender {
 
     const headers: Record<string, string> = {
       ...this.defaultHeaders,
-      'content-type': 'application/json',
     }
 
     let error;
