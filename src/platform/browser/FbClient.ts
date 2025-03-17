@@ -5,7 +5,7 @@ import { EventEmitter } from "../../utils/EventEmitter";
 import { SafeLogger } from "../../logging/SafeLogger";
 import { Emits } from "../../utils/Emits";
 import { IEventEmitter } from "../../utils/IEventEmitter";
-import BrowserPlatform from "./BrowserPlatform";
+import { BrowserPlatform } from "./BrowserPlatform";
 import LocalStorageStore from "./LocalStorageStore";
 import { IPlatform } from "../IPlatform";
 

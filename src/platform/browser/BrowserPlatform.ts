@@ -7,7 +7,7 @@ import { BrowserRequests } from "./BrowserRequests";
 import { IWebSocketWithEvents } from "../IWebSocket";
 import BrowserWebSocket from "./BrowserWebSocket";
 
-export default class BrowserPlatform implements IPlatform {
+export class BrowserPlatform implements IPlatform {
   info: IInfo = new BrowserInfo();
 
   requests: IRequests;

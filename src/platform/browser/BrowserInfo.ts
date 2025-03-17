@@ -19,7 +19,7 @@ export default class BrowserInfo implements IInfo {
     return {
       name: name,
       version: version,
-      userAgentBase: this.appType
+      userAgent: `${ this.appType }/${ version }`,
     };
   }
 }

@@ -21,7 +21,7 @@
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    const sdkKey = 'Obg68EqYZk27JTxphPgy7At1aJ8GaAtEaIA1fb3IpuEA';
+    const sdkKey = '3QFLBQibTE6i1duL1WAK2A227SK-9N8k-9VqurJDE_Qw';
     const flagKey = 'robot';
 
     window.onload = async (event) => {
@@ -49,6 +49,31 @@
             }
         ];
 
+        class MyBrowserInfo {
+            get appType() {
+                return 'Browser-Client-SDK';
+            }
+
+            platformData() {
+                return {
+                    os: {},
+                    name: 'Browser',
+                    additional: {},
+                };
+            }
+
+            sdkData() {
+                return {
+                    name: name,
+                    version: version,
+                    userAgent: navigator.userAgent // YOU CAN REPLACE THIS VALUE BY WHATEVER VALUE THAT FITS YOUR NEED
+                };
+            }
+        }
+
+        const platform = new BrowserPlatform();
+        platform.info = new MyBrowserInfo();
+
         const client = new FbClientBuilder()
             .sdkKey(sdkKey)
             .streamingUri('wss://app-eval.featbit.co')
@@ -57,6 +82,7 @@
             .logger(logger)
             .bootstrap(initialFlags)
             .startWaitTime(2000)
+            .platform(platform)
             .build();
 
         const changeHandler = async (flagKeys) => {

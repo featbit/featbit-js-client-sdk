@@ -69,7 +69,7 @@ export interface ISdkData {
    * If this is a top-level (not a wrapper) SDK this will be used to create the user agent string.
    * It will take the form 'userAgentBase/version`.
    */
-  userAgentBase?: string;
+  userAgent?: string;
 
   /**
    * Name of the wrapper SDK if present.

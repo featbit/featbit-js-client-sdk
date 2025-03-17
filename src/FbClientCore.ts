@@ -98,11 +98,11 @@ export class FbClientCore implements IFbClientCore {
     this.config = config;
     this.logger = config.logger;
 
-    this.init(platform, onUpdate, hasEventListeners);
+    this.init(onUpdate, hasEventListeners);
   }
 
-  private async init(platform: IPlatform, onUpdate: (keys: string[]) => void, hasEventListeners: () => boolean) {
-    const clientContext = new ClientContext(this.config.sdkKey, this.config, platform);
+  private async init(onUpdate: (keys: string[]) => void, hasEventListeners: () => boolean) {
+    const clientContext = new ClientContext(this.config.sdkKey, this.config, this.platform);
     this.store = this.config.storeFactory(clientContext);
     await this.store.identify(this.config.user);
     this.dataSourceUpdates = new DataSourceUpdates(this.store, hasEventListeners, onUpdate);
@@ -129,7 +129,7 @@ export class FbClientCore implements IFbClientCore {
           this.config.sdkKey,
           this.config.user,
           clientContext,
-          platform.webSocket,
+          this.platform.webSocket,
           () => this.store!.version,
           listeners,
           this.config.webSocketPingInterval
