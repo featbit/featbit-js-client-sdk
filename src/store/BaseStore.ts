@@ -32,7 +32,7 @@ export class BaseStore implements IStore {
     }
     if (Object.hasOwnProperty.call(items, key)) {
       const old = items[key];
-      if (!old || old.version < item.version) {
+      if (!old || old.version <= item.version) {
         items[key] = item;
       }
     } else {
