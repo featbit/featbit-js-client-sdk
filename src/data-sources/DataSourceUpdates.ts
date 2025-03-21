@@ -84,6 +84,14 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
   }
 
   private isUpdated(oldData?: IStoreItem, newData?: IStoreItem): boolean {
-    return !oldData || !newData || newData.version > oldData.version
+    if (!oldData && !newData) {
+      return false;
+    }
+
+    if (!oldData || !newData) {
+      return true;
+    }
+
+    return newData.version >= oldData.version && newData.variation !== oldData.variation;
   }
 }
