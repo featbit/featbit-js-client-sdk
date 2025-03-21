@@ -32,6 +32,9 @@ export class BaseStore implements IStore {
     }
     if (Object.hasOwnProperty.call(items, key)) {
       const old = items[key];
+      // we use <= here, the reason is that when a segment is changed, the upstream service would push the flag
+      // to client SDK with flag timestamp (version) instead of segment timestamp, so to ensure that the new flag value
+      // is saved, we need to use <=
       if (!old || old.version <= item.version) {
         items[key] = item;
       }
