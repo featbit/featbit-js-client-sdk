@@ -164,12 +164,23 @@ export class FbClientCore implements IFbClientCore {
       return;
     }
 
+    const [oldFlags, oldVersion] = this.store!.all(DataKinds.Flags);
+    const oldData = {
+      flags: {...oldFlags},
+      version: oldVersion
+    }
     this.config.user = user;
     await this.store!.identify(user);
     this.dataSynchronizer!.identify(user);
-    const [ flags ] = this.store!.all(DataKinds.Flags);
-    if (Object.keys(flags).length === 0) {
+    const [ newFlags, newVersion ] = this.store!.all(DataKinds.Flags);
+    const newData = {
+      flags: {...newFlags},
+      version: newVersion
+    }
+    if (Object.keys(newFlags).length === 0) {
       await this.config.bootstrapProvider.populate(user.keyId, this.dataSourceUpdates!);
+    } else {
+      this.dataSourceUpdates?.checkUpdates(oldData, newData);
     }
   }
 

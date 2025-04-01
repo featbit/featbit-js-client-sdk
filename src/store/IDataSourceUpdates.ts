@@ -26,6 +26,25 @@ export interface IDataSourceUpdates {
   init(userKeyId: string, allData: IStoreDataStorage, callback?: () => void): void;
 
   /**
+   * Compare old and new data, check if any update exists
+   * If update exists, send onUpdate events
+   *
+   * @param oldData
+   *   An object in which each key is the "namespace" of a collection (e.g. `"features"`) and
+   *   the value is an object that maps keys to entities. The actual type of this parameter is
+   *   `interfaces.FullDataSet<VersionedData>`.
+   *
+   * @param newData
+   *   An object in which each key is the "namespace" of a collection (e.g. `"features"`) and
+   *   the value is an object that maps keys to entities. The actual type of this parameter is
+   *   `interfaces.FullDataSet<VersionedData>`.
+   *
+   * @param callback
+   *   Will be called when the store has been initialized.
+   */
+  checkUpdates(oldData: IStoreDataStorage, newData: IStoreDataStorage, callback?: () => void): void;
+
+  /**
    * Updates or inserts an item in the specified collection. For updates, the object will only be
    * updated if the existing version is less than the new version.
    *
