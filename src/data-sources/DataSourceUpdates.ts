@@ -57,6 +57,26 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
     }
   }
 
+  checkUpdates(oldData: IStoreDataStorage, newData: IStoreDataStorage, callback?: () => void): void {
+    const checkForChanges = this.hasEventListeners();
+
+    if (!checkForChanges) {
+      return;
+    }
+
+    const updatedKeys = Object.keys(newData)
+    .flatMap((namespace) => {
+      const oldDataForKind = oldData?.[namespace] || {};
+      const newDataForKind = newData[namespace];
+      const mergedData = {...oldDataForKind, ...newDataForKind};
+      return Object.keys(mergedData)
+      .filter((key: string) => this.isUpdated(oldDataForKind && oldDataForKind[key], newDataForKind && newDataForKind[key]));
+    });
+    updatedKeys.length > 0 && this.onChange(updatedKeys);
+
+    callback?.();
+  }
+
   upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem, callback: () => void): void {
     if (userKeyId !== this.store.user.keyId) {
       callback?.();
