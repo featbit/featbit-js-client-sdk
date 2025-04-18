@@ -88,6 +88,11 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
 
   identify(user: IUser) {
     this.user = {...user};
+    if (this.timeoutHandle) {
+      clearTimeout(this.timeoutHandle);
+      this.timeoutHandle = undefined;
+    }
+    this.poll();
   }
 
   close(): void {
