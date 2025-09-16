@@ -16,5 +16,5 @@ export interface IStreamResponse {
 export type EventName = 'delete' | 'patch' | 'ping' | 'put';
 export type ProcessStreamResponse = {
   deserializeData: (flags: IFlag[]) => any;
-  processJson: (userKeyId: string, json: any) => void;
+  processJson: (userKeyId: string, json: any) => Promise<void>;
 };

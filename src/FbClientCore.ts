@@ -169,9 +169,13 @@ export class FbClientCore implements IFbClientCore {
       flags: {...oldFlags},
       version: oldVersion
     }
+
     this.config.user = user;
+
     await this.store!.identify(user);
-    this.dataSynchronizer!.identify(user);
+
+    await this.dataSynchronizer!.identify(user);
+
     const [ newFlags, newVersion ] = this.store!.all(DataKinds.Flags);
     const newData = {
       flags: {...newFlags},

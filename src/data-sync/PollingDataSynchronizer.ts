@@ -30,14 +30,14 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
     this.user = config.user;
   }
 
-  private poll() {
+  private poll(resolve?: () => void, reject?: () => void) {
     if (this.stopped) {
       return;
     }
 
     const startTime = Date.now();
     this.logger?.debug('Polling for feature flag and segments updates');
-    this.requestor.requestData(this.getStoreTimestamp(), this.user, (err, body) => {
+    this.requestor.requestData(this.getStoreTimestamp(), this.user, async (err, body) => {
       const elapsed = Date.now() - startTime;
       const sleepFor = Math.max(this.pollingInterval - elapsed, 0);
 
@@ -50,9 +50,15 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
           this.errorHandler?.(new PollingError(message, status));
           // It is not recoverable, return and do not trigger another
           // poll.
+          reject?.();
           return;
         }
         this.logger?.warn(httpErrorMessage(err, 'polling request', 'will retry'));
+        // Falling through, there was some type of error, we need to trigger
+        // a new poll.
+        this.timeoutHandle = setTimeout(() => {
+          this.poll(resolve, reject);
+        }, sleepFor);
       } else {
         let featureFlags = [];
         let userKeyId = this.user?.keyId!;
@@ -75,24 +81,27 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
         }
 
         const data = processStreamResponse?.deserializeData?.(featureFlags);
-        processStreamResponse?.processJson?.(userKeyId, data);
+        await processStreamResponse?.processJson?.(userKeyId, data);
+        resolve?.();
+        // Falling through, there was some type of error, we need to trigger
+        // a new poll.
+        this.timeoutHandle = setTimeout(() => {
+          this.poll();
+        }, sleepFor);
       }
-
-      // Falling through, there was some type of error and we need to trigger
-      // a new poll.
-      this.timeoutHandle = setTimeout(() => {
-        this.poll();
-      }, sleepFor);
     });
   }
 
-  identify(user: IUser) {
+  async identify(user: IUser): Promise<void> {
     this.user = {...user};
     if (this.timeoutHandle) {
       clearTimeout(this.timeoutHandle);
       this.timeoutHandle = undefined;
     }
-    this.poll();
+
+    return new Promise((resolve, reject) => {
+      this.poll(resolve, reject);
+    });
   }
 
   close(): void {

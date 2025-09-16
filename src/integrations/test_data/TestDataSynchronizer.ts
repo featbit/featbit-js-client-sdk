@@ -28,7 +28,7 @@ export default class TestDataSynchronizer implements IDataSynchronizer {
     });
   }
 
-  identify() {
+  async identify(): Promise<void> {
     // no-op
   }
 

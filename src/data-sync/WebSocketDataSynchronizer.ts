@@ -8,6 +8,7 @@ import { IUser } from "../options/IUser";
 class WebSocketDataSynchronizer implements IDataSynchronizer {
   private socket?: IWebSocketWithEvents;
   private readonly logger?: ILogger;
+  private identifyResolve?: () => void;
 
   private connectionAttemptStartTime?: number;
 
@@ -34,20 +35,23 @@ class WebSocketDataSynchronizer implements IDataSynchronizer {
     });
 
     this.listeners.forEach(({deserializeData, processJson}, eventName) => {
-      this.socket?.addListener(eventName, (event) => {
+      this.socket?.addListener(eventName, async (event) => {
         this.logger?.debug(`Received ${ eventName } event`);
 
         if (event?.data) {
           const {featureFlags, userKeyId} = event.data;
           const data = deserializeData(featureFlags);
-          processJson(userKeyId, data);
+          await processJson(userKeyId, data);
+          this.identifyResolve?.();
+          this.identifyResolve = undefined;
         }
       });
     })
   }
 
-  identify(user: IUser): void {
+  async identify(user: IUser): Promise<void> {
     this.socket?.identify(user);
+    return new Promise(resolve => this.identifyResolve = resolve);
   }
 
   start(): void {
