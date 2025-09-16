@@ -23,7 +23,7 @@ export interface IDataSourceUpdates {
    * @param callback
    *   Will be called when the store has been initialized.
    */
-  init(userKeyId: string, allData: IStoreDataStorage, callback?: () => void): void;
+  init(userKeyId: string, allData: IStoreDataStorage, callback?: () => void): Promise<void>;
 
   /**
    * Compare old and new data, check if any update exists
@@ -64,5 +64,5 @@ export interface IDataSourceUpdates {
    * @param callback
    *   Will be called after the upsert operation is complete.
    */
-  upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem, callback: () => void): void;
+  upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem, callback: () => void): Promise<void>;
 }

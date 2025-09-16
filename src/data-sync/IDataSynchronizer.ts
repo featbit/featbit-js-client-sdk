@@ -11,5 +11,5 @@ export interface IDataSynchronizer {
   start: () => void;
   stop: () => void;
   close: () => void;
-  identify: (user: IUser) => void;
+  identify: (user: IUser) => Promise<void>;
 }

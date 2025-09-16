@@ -20,7 +20,7 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
   ) {
   }
 
-  init(userKeyId: string, allData: IStoreDataStorage, callback?: () => void): void {
+  async init(userKeyId: string, allData: IStoreDataStorage, callback?: () => void): Promise<void> {
     if (userKeyId !== this.store.user.keyId) {
       callback?.();
       return;
@@ -51,9 +51,9 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
         flags,
         version
       };
-      doInit(oldData);
+      await doInit(oldData);
     } else {
-      doInit();
+      await doInit();
     }
   }
 
@@ -77,7 +77,7 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
     callback?.();
   }
 
-  upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem, callback: () => void): void {
+  async upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem, callback: () => void): Promise<void> {
     if (userKeyId !== this.store.user.keyId) {
       callback?.();
       return;
@@ -97,9 +97,9 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
     };
     if (checkForChanges) {
       const item = this.store.get(kind, key);
-      doUpsert(item || undefined);
+      await doUpsert(item || undefined);
     } else {
-      doUpsert();
+      await doUpsert();
     }
   }
 

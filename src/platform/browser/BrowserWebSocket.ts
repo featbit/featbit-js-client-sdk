@@ -59,6 +59,11 @@ class BrowserWebSocket implements IWebSocket {
     that.ws?.addEventListener('message', function (event) {
       const message = JSON.parse(event.data as string);
       if (message.messageType === 'data-sync') {
+        if (message.data.userKeyId !== that._config.user.keyId) {
+          // abort the message if message is not for the current user
+          return;
+        }
+
         switch (message.data.eventType) {
           case StreamResponseEventType.patch:
             that.emitter.emit('patch', message);

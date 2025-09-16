@@ -7,11 +7,10 @@ import {
   IPatchData,
   Flags
 } from "../store/serialization";
-import DataKinds from "../store/DataKinds";
 import { IStoreDataStorage } from "../store/store";
 import { EventName, ProcessStreamResponse } from "../data-sync/types";
 
-export const createPutListener = (
+const createPutListener = (
   dataSourceUpdates: IDataSourceUpdates,
   logger?: ILogger,
   onPutCompleteHandler: VoidFunction = () => {
@@ -25,11 +24,11 @@ export const createPutListener = (
     };
 
     logger?.debug('Initializing all data');
-    dataSourceUpdates.init(userKeyId, initData, onPutCompleteHandler);
+    await dataSourceUpdates.init(userKeyId, initData, onPutCompleteHandler);
   },
 });
 
-export const createPatchListener = (
+const createPatchListener = (
   dataSourceUpdates: IDataSourceUpdates,
   logger?: ILogger,
   onPatchCompleteHandler: VoidFunction = () => {
@@ -42,10 +41,12 @@ export const createPatchListener = (
       return;
     }
 
-    data?.forEach(item => {
-      logger?.debug(`Updating ${ item.data.key } in ${ item.kind.namespace }`);
-      dataSourceUpdates.upsert(userKeyId, item.kind, item.data, onPatchCompleteHandler);
-    })
+    if (data?.length > 0) {
+      for(const item of data) {
+        logger?.debug(`Updating ${ item.data.key } in ${ item.kind.namespace }`);
+        await dataSourceUpdates.upsert(userKeyId, item.kind, item.data, onPatchCompleteHandler);
+      }
+    }
   },
 });
 
