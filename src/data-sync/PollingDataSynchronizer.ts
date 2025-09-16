@@ -54,6 +54,11 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
           return;
         }
         this.logger?.warn(httpErrorMessage(err, 'polling request', 'will retry'));
+        // Falling through, there was some type of error, we need to trigger
+        // a new poll.
+        this.timeoutHandle = setTimeout(() => {
+          this.poll(resolve, reject);
+        }, sleepFor);
       } else {
         let featureFlags = [];
         let userKeyId = this.user?.keyId!;
@@ -78,13 +83,12 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
         const data = processStreamResponse?.deserializeData?.(featureFlags);
         await processStreamResponse?.processJson?.(userKeyId, data);
         resolve?.();
+        // Falling through, there was some type of error, we need to trigger
+        // a new poll.
+        this.timeoutHandle = setTimeout(() => {
+          this.poll();
+        }, sleepFor);
       }
-
-      // Falling through, there was some type of error and we need to trigger
-      // a new poll.
-      this.timeoutHandle = setTimeout(() => {
-        this.poll();
-      }, sleepFor);
     });
   }
 
