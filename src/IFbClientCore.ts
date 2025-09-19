@@ -18,7 +18,7 @@ export interface IFbClientCore {
    *   The current user. The actual type of this parameter is
    *   {@link IUser}.
    */
-  identify(user: IUser): void;
+  identify(user: IUser): Promise<void>;
 
   /**
    * Indicates whether the client is ready to be used.
