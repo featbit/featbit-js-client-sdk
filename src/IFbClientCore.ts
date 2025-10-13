@@ -1,6 +1,7 @@
 import { IEvalDetail } from "./evaluation/IEvalDetail";
 import { IConvertResult } from "./utils/ValueConverters";
 import { IUser } from "./options";
+import { FlagValue } from "./evaluation";
 
 /**
  * The FeatBit SDK client object.
@@ -168,8 +169,8 @@ export interface IFbClientCore {
    */
   jsonVariation(
     key: string,
-    defaultValue: any
-  ): any;
+    defaultValue: FlagValue
+  ): FlagValue;
 
   /**
    * Calculates the JSON value of a feature flag for a given user, and returns an object that
@@ -188,8 +189,8 @@ export interface IFbClientCore {
    */
   jsonVariationDetail(
     key: string,
-    defaultValue: any
-  ): IEvalDetail<any>;
+    defaultValue: FlagValue
+  ): IEvalDetail<FlagValue>;
 
   /**
    * Calculates the string value of a feature flag for a given user.
@@ -207,8 +208,8 @@ export interface IFbClientCore {
    */
   variation(
     key: string,
-    defaultValue: string
-  ): string;
+    defaultValue: FlagValue
+  ): FlagValue;
 
   /**
    * Calculates the string value of a feature flag for a given user, and returns an object that
@@ -227,8 +228,8 @@ export interface IFbClientCore {
    */
   variationDetail(
     key: string,
-    defaultValue: string
-  ): IEvalDetail<string>;
+    defaultValue: FlagValue
+  ): IEvalDetail<FlagValue>;
 
   /**
    * This method is exposed only for testing purpose, please DO NOT USE IT
@@ -244,14 +245,14 @@ export interface IFbClientCore {
    * @param defaultValue
    *  The default value to return if the flag cannot be evaluated.
    * @param typeConverter
-   *  the function to convert result.
+   *  the function to convert result, if null, the value returned will have the same type of the flag defined in FeatBit
    *
    *  @returns {@link IEvalDetail} object describing the way the value was determined.
    */
   evaluateCore<TValue>(
     flagKey: string,
     defaultValue: TValue,
-    typeConverter: (value: string) => IConvertResult<TValue>
+    typeConverter?: (value: string) => IConvertResult<TValue>
   ): IEvalDetail<TValue>;
 
   /**

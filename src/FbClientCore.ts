@@ -26,6 +26,7 @@ import { MetricEvent } from "./events/event";
 import { DataSyncModeEnum } from "./data-sync/DataSyncMode";
 import { IUser } from "./options/IUser";
 import { UserValidator } from "./options/Validators";
+import { FlagValue, VariationDataType } from "./evaluation";
 
 enum ClientState {
   Initializing,
@@ -264,11 +265,11 @@ export class FbClientCore implements IFbClientCore {
     return this.evaluateCore(key, defaultValue, ValueConverters.bool);
   }
 
-  jsonVariation(key: string, defaultValue: any): any {
+  jsonVariation(key: string, defaultValue: FlagValue): FlagValue {
     return this.evaluateCore(key, defaultValue, ValueConverters.json).value!;
   }
 
-  jsonVariationDetail(key: string, defaultValue: any): IEvalDetail<any> {
+  jsonVariationDetail(key: string, defaultValue: FlagValue): IEvalDetail<FlagValue> {
     return this.evaluateCore(key, defaultValue, ValueConverters.json);
   }
 
@@ -288,12 +289,12 @@ export class FbClientCore implements IFbClientCore {
     return this.evaluateCore(key, defaultValue, ValueConverters.string);
   }
 
-  variation(key: string, defaultValue: string): string {
-    return this.evaluateCore(key, defaultValue, ValueConverters.string).value!;
+  variation(key: string, defaultValue: FlagValue): FlagValue {
+    return this.evaluateCore(key, defaultValue).value!;
   }
 
-  variationDetail(key: string, defaultValue: string): IEvalDetail<string> {
-    return this.evaluateCore(key, defaultValue, ValueConverters.string);
+  variationDetail(key: string, defaultValue: FlagValue): IEvalDetail<FlagValue> {
+    return this.evaluateCore(key, defaultValue);
   }
 
   getAllVariations(): Promise<IEvalDetail<string>[]> {
@@ -342,7 +343,7 @@ export class FbClientCore implements IFbClientCore {
   evaluateCore<TValue>(
     flagKey: string,
     defaultValue: TValue,
-    typeConverter: (value: string) => IConvertResult<TValue>
+    typeConverter?: (value: string) => IConvertResult<TValue>
   ): IEvalDetail<TValue> {
     const context = Context.fromUser(this.config.user);
     if (!context.valid) {
@@ -374,7 +375,29 @@ export class FbClientCore implements IFbClientCore {
       this.eventProcessor!.record(evalResult.toEvalEvent(this.config.user));
     }
 
-    const {isSucceeded, value} = typeConverter(evalResult.value?.variation!);
+    let converter: (value: string) => IConvertResult<any>;
+    if (!typeConverter) {
+      switch (evalResult.value!.variationType) {
+        case VariationDataType.boolean:
+          converter = ValueConverters.bool;
+          break;
+        case VariationDataType.number:
+          converter = ValueConverters.number;
+          break;
+        case VariationDataType.json:
+            converter = ValueConverters.json;
+            break;
+        case VariationDataType.string:
+          converter = ValueConverters.string;
+          break;
+        default:
+          converter = ValueConverters.string;
+      }
+    } else {
+      converter = typeConverter;
+    }
+
+    const {isSucceeded, value} = converter(evalResult.value!.variation!);
     return isSucceeded
       ? {flagKey, kind: evalResult.kind, reason: evalResult.reason, value}
       : {flagKey, kind: ReasonKinds.WrongType, reason: 'type mismatch', value: defaultValue};
