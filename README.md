@@ -275,6 +275,20 @@ As all data is stored locally in the localStorage, in the following situations, 
 
 In the meantime, the SDK would try to reconnect to the server by an incremental interval, this makes sure that the websocket would be restored when the internet connection is back.
 
+### Disable Events Collection
+
+By default, the SDK automatically sends events (flag evaluation events and metric events for A/B testing) to the FeatBit server, unless the SDK is in offline mode.
+
+If you prefer to disable this event collection while the SDK is in online mode, you can configure this behavior using the disableEvents option.
+
+```javascript
+import { FbClientBuilder } from "@featbit/browser-server-sdk";
+
+const fbClient = new FbClientBuilder()
+        .disableEvents(true)
+        .build();
+```
+
 ### Experiments (A/B/n Testing)
 
 We support automatic experiments for pageviews and clicks, you just need to set your experiment on our SaaS platform,
