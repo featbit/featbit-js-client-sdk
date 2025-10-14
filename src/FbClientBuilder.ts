@@ -127,6 +127,14 @@ export class FbClientBuilder {
   }
 
   /**
+   * Refer to {@link IOptions.disableEvents}.
+   */
+  disableEvents(param: boolean): FbClientBuilder {
+    this._options.disableEvents = param;
+    return this;
+  }
+
+  /**
    * Refer to {@link IOptions.logger}.
    */
   logger(logger: ILogger): FbClientBuilder {
