@@ -112,10 +112,6 @@ export class FbClientCore implements IFbClientCore {
     // use bootstrap provider to populate store
     await this.config.bootstrapProvider.populate(this.config.user.keyId, this.dataSourceUpdates);
 
-    if (this.config.disableEvents || this.config.offline) {
-      this.eventProcessor = new NullEventProcessor();
-    }
-
     if (this.config.offline) {
       this.eventProcessor = new NullEventProcessor();
       this.dataSynchronizer = new NullDataSynchronizer();
