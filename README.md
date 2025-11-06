@@ -172,7 +172,7 @@ The default logger uses **none** as log level which means it will output nothing
 
 ```javascript
 const fbClient = new FbClientBuilder()
-    .logLevel('debug')
+    .logLevel('debug') // possible log levels: 'debug', 'info', 'warn', 'error', 'none'
     ...
     .build();
 
@@ -191,7 +191,7 @@ Your logger must implement the **ILogger** interface, we provided a **BasicLogge
 
 ```javascript
 const logger = new BasicLogger({
-    level: 'debug',
+    level: 'debug', // possible log levels: 'debug', 'info', 'warn', 'error', 'none'
     destination: console.log
 });
 
