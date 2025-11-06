@@ -164,6 +164,53 @@ const fbClient = new FbClientBuilder()
     .build();
 ```
 
+### Logger
+
+The default logger uses **none** as log level which means it will output nothing. If the default logger does not fit your needs, you have two options.
+
+#### Use a different log level
+
+```javascript
+const fbClient = new FbClientBuilder()
+    .logLevel('debug')
+    ...
+    .build();
+
+// or
+const options = {
+  ...
+  logLevel: 'debug'
+}
+
+const fbClient = new FbClientBuilder(options).build();
+```
+
+#### Define your own logger
+
+Your logger must implement the **ILogger** interface, we provided a **BasicLogger**, you can use it like this:
+
+```javascript
+const logger = new BasicLogger({
+    level: 'debug',
+    destination: console.log
+});
+
+const fbClient = new FbClientBuilder()
+    .logger(logger)
+    ...
+    .build();
+
+// or
+const options = {
+  ...
+  logger: logger
+}
+
+const fbClient = new FbClientBuilder(options).build();
+```
+
+Be aware that the logger option has a higher priority than logLevel. If you pass both options, logLevel would be ignored.
+
 ### Evaluation
 
 After initialization, the SDK has all the feature flags locally, and it does not need to request the remote server for any feature flag evaluation. All evaluation is done locally and synchronously, the average evaluation time is less than 1 ms.

@@ -45,7 +45,7 @@ export class BasicLogger implements ILogger {
     this.logLevel = LogPriority[options.level ?? 'info'] ?? LogPriority.info;
     this.name = options.name ?? 'FeatBit';
     // eslint-disable-next-line no-console
-    this.destination = options.destination;
+    this.destination = options.destination ?? console.log;
     this.formatter = options.formatter;
   }
 

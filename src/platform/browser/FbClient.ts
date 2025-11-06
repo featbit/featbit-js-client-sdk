@@ -21,7 +21,15 @@ class FbClient extends FbClientCore {
       destination: console.log
     });
 
-    const logger = options.logger ? new SafeLogger(options.logger, fallbackLogger) : fallbackLogger;
+    let logger;
+    if (options.logger) {
+      logger = new SafeLogger(options.logger, fallbackLogger)
+    } else {
+      logger = new BasicLogger({
+        level: options.logLevel ?? "none",
+        destination: console.log
+      });
+    }
 
     const emitter = new EventEmitter(logger);
 
