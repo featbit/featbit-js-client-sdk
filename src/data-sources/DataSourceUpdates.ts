@@ -39,6 +39,7 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
       }
 
       await this.store.init(newData);
+
       Promise.resolve().then(() => {
         if (checkForChanges) {
           const updatedKeys = Object.keys(newData)
@@ -55,16 +56,12 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
       callback?.();
     };
 
-    if (checkForChanges) {
-      const [flags, version] = this.store.all(DataKinds.Flags);
-      const oldData = {
-        flags,
-        version
-      };
-      await doInit(oldData);
-    } else {
-      await doInit();
-    }
+    const [flags, version] = this.store.all(DataKinds.Flags);
+    const oldData = {
+      flags,
+      version
+    };
+    await doInit(oldData);
   }
 
   checkUpdates(oldData: IStoreDataStorage, newData: IStoreDataStorage, callback?: () => void): void {
