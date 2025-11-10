@@ -1,7 +1,7 @@
 import { IBootstrapProvider } from "./IBootstrapProvider";
 import { deserializeAll } from "../store/serialization";
 import { IDataSourceUpdates } from "../store/IDataSourceUpdates";
-import { IStoreDataStorage } from "../store/store";
+import { IStoreDataStorage, StoreItemOriginEnum } from "../store/store";
 import { isNullOrUndefined } from "../utils/isNullOrUndefined";
 import { IFlag, IFlagBase } from "../evaluation/data/IFlag";
 
@@ -9,7 +9,7 @@ export class JsonBootstrapProvider implements IBootstrapProvider {
   private dataSet?: IStoreDataStorage;
 
   constructor(bootstrap: IFlagBase[]) {
-    const flags: IFlag[] = (bootstrap || []).map((flag: IFlagBase) => ({...flag, variationOptions: flag.variationOptions || [{id: null, variation: flag.variation}]})) as IFlag[];
+    const flags: IFlag[] = (bootstrap || []).map((flag: IFlagBase) => ({...flag, origin: StoreItemOriginEnum.Local, variationOptions: flag.variationOptions || [{id: null, variation: flag.variation}]})) as IFlag[];
 
     const data = deserializeAll(flags);
     this.dataSet = {

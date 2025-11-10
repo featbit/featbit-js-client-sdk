@@ -1,3 +1,5 @@
+import { StoreItemOriginEnum } from "../../store";
+
 export type FlagValue = any;
 
 export enum VariationDataType {
@@ -25,5 +27,6 @@ export interface IFlagBase {
 export interface IFlag extends IFlagBase {
   key: string, // the same value to id
   variations: IVariation[],// the same value to variationOptions
-  version: number
+  version: number,
+  origin: StoreItemOriginEnum
 }

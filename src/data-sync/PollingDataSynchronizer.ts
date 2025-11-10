@@ -6,6 +6,7 @@ import { EventName, PollingErrorHandler, ProcessStreamResponse, StreamResponseEv
 import Requestor from "./Requestor";
 import { httpErrorMessage } from "../utils/http";
 import { IUser } from "../options/IUser";
+import { StoreItemOriginEnum } from "../store";
 
 export default class PollingDataSynchronizer implements IDataSynchronizer {
   private stopped = false;
@@ -77,6 +78,8 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
             }
 
             ({featureFlags, userKeyId} = message.data);
+            // set origin
+            featureFlags =  featureFlags.map((ff: any) => ({...ff, origin: StoreItemOriginEnum.Remote}));
           }
         }
 

@@ -2,11 +2,17 @@ export const StoreStorageKey = 'fb-datastore';
 
 export const CurrentUserStorageKey = 'fb-user';
 
+export enum StoreItemOriginEnum {
+  Local = 'Local',
+  Remote = 'Remote',
+}
+
 /**
  * Represents an item which can be stored in the feature store.
  */
 export interface IStoreItem {
   version: number;
+  origin: StoreItemOriginEnum,
 
   // The actual data associated with the item.
   [attribute: string]: any;

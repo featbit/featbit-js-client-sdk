@@ -4,6 +4,7 @@ import { EventName, ProcessStreamResponse } from "./types";
 import { ILogger } from "../logging/ILogger";
 import { IWebSocketWithEvents } from "../platform/IWebSocket";
 import { IUser } from "../options/IUser";
+import { StoreItemOriginEnum } from "../store";
 
 class WebSocketDataSynchronizer implements IDataSynchronizer {
   private socket?: IWebSocketWithEvents;
@@ -39,7 +40,9 @@ class WebSocketDataSynchronizer implements IDataSynchronizer {
         this.logger?.debug(`Received ${ eventName } event`);
 
         if (event?.data) {
-          const {featureFlags, userKeyId} = event.data;
+          const {userKeyId} = event.data;
+          // set origin
+          const featureFlags =  event.data.featureFlags.map((ff: any) => ({...ff, origin: StoreItemOriginEnum.Remote}));
           const data = deserializeData(featureFlags);
           await processJson(userKeyId, data);
           this.identifyResolve?.();

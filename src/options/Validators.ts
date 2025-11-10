@@ -278,7 +278,7 @@ export class TypeValidators {
 
   static readonly User = new Type<object>('object', {});
 
-  static readonly Bootstrap = new Type<object>('object', {});
+  static readonly Bootstrap = new TypeArray<object[]>('object[]', []);
 
   static readonly Function = new Function();
 

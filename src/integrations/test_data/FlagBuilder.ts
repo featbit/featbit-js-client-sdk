@@ -1,10 +1,12 @@
 // used only by tests
 import { IFlag, VariationDataType, IVariation, FlagValue } from "../../evaluation/data/IFlag";
+import { StoreItemOriginEnum } from "../../store";
 
 export class FlagBuilder {
   private _id: string = `xxxxx-${new Date().getTime()}-xxxxxx`;
   private _key?: string;
   private _version?: number;
+  private _origin?: StoreItemOriginEnum;
   private _variationType: VariationDataType = VariationDataType.empty;
   private _sendToExperiment: boolean = false;
   private _variation: FlagValue = '';
@@ -22,6 +24,11 @@ export class FlagBuilder {
 
   version(version: number): FlagBuilder {
     this._version = version
+    return this;
+  }
+
+  origin(origin: StoreItemOriginEnum): FlagBuilder {
+    this._origin = origin
     return this;
   }
 
@@ -50,6 +57,7 @@ export class FlagBuilder {
       id: this._id!,
       key: this._key!,
       version: this._version!,
+      origin: this._origin!,
       variationType: this._variationType,
       variations: this._variations,
       sendToExperiment: this._sendToExperiment,
