@@ -2,6 +2,7 @@ import { IEvalDetail } from "./evaluation/IEvalDetail";
 import { IConvertResult } from "./utils/ValueConverters";
 import { IUser } from "./options";
 import { FlagValue } from "./evaluation";
+import { ILogger } from "./logging";
 
 /**
  * The FeatBit SDK client object.
@@ -289,4 +290,9 @@ export interface IFbClientCore {
    * @returns A promise that resolves when the client has been shut down.
    */
   flush(callback?: (res: boolean) => void): Promise<boolean>;
+
+  /**
+   * Expose the logger.
+   */
+  logger?: ILogger;
 }

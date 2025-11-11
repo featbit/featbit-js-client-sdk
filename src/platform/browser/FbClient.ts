@@ -8,6 +8,7 @@ import { IEventEmitter } from "../../utils/IEventEmitter";
 import { BrowserPlatform } from "./BrowserPlatform";
 import LocalStorageStore from "./LocalStorageStore";
 import { IPlatform } from "../IPlatform";
+import { ILogger } from "../../logging";
 
 /**
  * @ignore
