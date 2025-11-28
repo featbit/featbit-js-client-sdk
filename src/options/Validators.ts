@@ -168,15 +168,18 @@ export class BootstrapValidator implements TypeValidator {
     try {
       const bootstrap = u as IFlagBase[];
       for (let flag of bootstrap) {
-        const hasMandatoryKeys = ['id', 'variation'].every((key) => Object.keys(flag).includes(key));
         const keys = Object.keys(flag);
 
-        if (keys.includes('id')) {
+        if (!keys.includes('id')) {
           this.messages.push(OptionMessages.missingKeyInBootstrapValue('id'));
         }
 
-        if (keys.includes('variation')) {
+        if (!keys.includes('variation')) {
           this.messages.push(OptionMessages.missingKeyInBootstrapValue('variation'));
+        }
+
+        if (!keys.includes('variationType')) {
+          this.messages.push(OptionMessages.missingKeyInBootstrapValue('variationType'));
         }
 
         if (this.messages.length > 0) {
@@ -276,9 +279,9 @@ export class TypeValidators {
 
   static readonly Boolean = new Type<boolean>('boolean', true);
 
-  static readonly User = new Type<object>('object', {});
+  static readonly User = new UserValidator();
 
-  static readonly Bootstrap = new TypeArray<object[]>('object[]', []);
+  static readonly Bootstrap = new BootstrapValidator();
 
   static readonly Function = new Function();
 

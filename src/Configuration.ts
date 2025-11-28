@@ -183,10 +183,10 @@ export default class Configuration {
 
     const {errors, validatedOptions} = validateTypesAndNames(options);
     errors.forEach((error) => {
-      this.logger?.warn(error);
+      this.logger?.error(error);
     });
 
-    this.user = options.user!;
+    this.user = validatedOptions.user!;
 
     validateEndpoints(options, validatedOptions);
     this.streamingUri = `${ canonicalizeUri(validatedOptions.streamingUri) }/streaming`;

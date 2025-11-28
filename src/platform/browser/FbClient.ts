@@ -18,7 +18,7 @@ class FbClient extends FbClientCore {
 
   constructor(options: IOptions, platform: IPlatform | undefined = undefined) {
     const fallbackLogger = new BasicLogger({
-      level: 'none',
+      level: 'warn',
       destination: console.log
     });
 
@@ -27,7 +27,7 @@ class FbClient extends FbClientCore {
       logger = new SafeLogger(options.logger, fallbackLogger)
     } else {
       logger = new BasicLogger({
-        level: options.logLevel ?? "none",
+        level: options.logLevel ?? "warn",
         destination: console.log
       });
     }
