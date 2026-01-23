@@ -5,7 +5,7 @@ export function serializeUser(user: IUser | undefined): string {
     return '';
   }
 
-  const builtInProperties = `${user.keyId},${user.name}`;
+  const builtInProperties = `${user.keyId},${user.name ?? ''}`;
 
   const customizedProperties = user.customizedProperties
     ?.sort((a, b) => {
@@ -25,4 +25,23 @@ export function serializeUser(user: IUser | undefined): string {
     .join(',');
 
   return `${builtInProperties},${customizedProperties}`;
+}
+
+export async function hashSerializeUser(
+  user: IUser | undefined
+): Promise<string> {
+  const serialized = serializeUser(user);
+
+  if (!serialized) {
+    return '';
+  }
+
+  const encoder = new TextEncoder();
+  const data = encoder.encode(serialized);
+
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+
+  return Array.from(new Uint8Array(hashBuffer))
+  .map(b => b.toString(16).padStart(2, '0'))
+  .join('');
 }

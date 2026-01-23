@@ -3,6 +3,7 @@ import {
   IStoreDataStorage
 } from "./store";
 import { BaseStore } from "./BaseStore";
+import { hashSerializeUser } from "../utils";
 
 export default class InMemoryStore extends BaseStore {
   private allStores: { [DataStoreStorageKey: string]: IStoreDataStorage } = {};
@@ -25,12 +26,14 @@ export default class InMemoryStore extends BaseStore {
   }
 
   protected override async dumpStoreToStorage() {
-    const storageKey = `${StoreStorageKey}-${this._user.keyId}`;
+    const userHash = await hashSerializeUser(this._user);
+    const storageKey = `${StoreStorageKey}-${userHash}`;
     this.allStores[storageKey] = {...this.store};
   }
 
   protected override async loadStoreFromStorage() {
-    const storageKey = `${StoreStorageKey}-${this._user.keyId}`;
+    const userHash = await hashSerializeUser(this._user);
+    const storageKey = `${StoreStorageKey}-${userHash}`;
 
     this.store = this.allStores[storageKey] ?? { flags: {}, version: 0 };
   }

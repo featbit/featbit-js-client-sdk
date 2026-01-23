@@ -5,7 +5,7 @@ import {
 import { IOptions } from "../../options/IOptions";
 import { BaseStore } from "../../store/BaseStore";
 import { ILogger } from "../../logging";
-import { serializeUser } from "../../utils/serializeUser";
+import { hashSerializeUser, serializeUser } from "../../utils/serializeUser";
 
 export default class LocalStorageStore extends BaseStore {
   private logger: ILogger;
@@ -31,12 +31,14 @@ export default class LocalStorageStore extends BaseStore {
   }
 
   protected override async dumpStoreToStorage() {
-    const storageKey = `${StoreStorageKey}-${this._user.keyId}`;
+    const userHash = await hashSerializeUser(this._user);
+    const storageKey = `${StoreStorageKey}-${userHash}`;
     localStorage.setItem(storageKey, JSON.stringify(this.store));
   }
 
   protected override async loadStoreFromStorage() {
-    const storageKey = `${StoreStorageKey}-${this._user.keyId}`;
+    const userHash = await hashSerializeUser(this._user);
+    const storageKey = `${StoreStorageKey}-${userHash}`;
     const dataStoreStr = localStorage.getItem(storageKey);
     let store: IStoreDataStorage | null = null;
 
