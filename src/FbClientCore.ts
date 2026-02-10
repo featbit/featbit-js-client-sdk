@@ -179,7 +179,11 @@ export class FbClientCore implements IFbClientCore {
 
     await this.store!.identify(user);
 
-    await this.dataSynchronizer!.identify(user);
+    try {
+      await this.dataSynchronizer!.identify(user);
+    } catch (_) {
+      this.logger?.error('dataSynchronizer unable to identify user.');
+    }
 
     const [ newFlags, newVersion ] = this.store!.all(DataKinds.Flags);
     const newData = {

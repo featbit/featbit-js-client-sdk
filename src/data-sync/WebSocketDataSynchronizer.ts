@@ -53,8 +53,13 @@ class WebSocketDataSynchronizer implements IDataSynchronizer {
   }
 
   async identify(user: IUser): Promise<void> {
-    this.socket?.identify(user);
-    return new Promise(resolve => this.identifyResolve = resolve);
+    const succeeded = this.socket?.identify(user);
+    return new Promise((resolve, reject) => {
+      this.identifyResolve = resolve;
+      if (!succeeded) {
+        reject(new Error("Websocket identify failed"));
+      }
+    });
   }
 
   start(): void {

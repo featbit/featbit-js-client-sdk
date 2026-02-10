@@ -1,1 +1,1 @@
-export const version = "4.2.5"; export const name = "@featbit/js-client-sdk";
+export const version = "4.2.6"; export const name = "@featbit/js-client-sdk";

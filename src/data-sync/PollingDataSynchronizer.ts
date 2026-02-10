@@ -45,7 +45,7 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
       this.logger?.debug('Elapsed: %d ms, sleeping for %d ms', elapsed, sleepFor);
       if (err) {
         const {status} = err;
-        if (status && !isHttpRecoverable(status)) {
+        if (!isHttpRecoverable(status)) {
           const message = httpErrorMessage(err, 'polling request');
           this.logger?.error(message);
           this.errorHandler?.(new PollingError(message, status));

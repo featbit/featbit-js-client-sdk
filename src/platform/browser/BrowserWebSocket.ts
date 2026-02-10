@@ -20,9 +20,9 @@ class BrowserWebSocket implements IWebSocket {
     this.emitter = new EventEmitter();
   }
 
-  identify(user: IUser) {
+  identify(user: IUser): boolean {
     this._config.user = user;
-    this.doDataSync();
+    return this.doDataSync();
   }
 
   connect() {
@@ -111,7 +111,7 @@ class BrowserWebSocket implements IWebSocket {
     }, this._config.pingInterval);
   }
 
-  private doDataSync() {
+  private doDataSync(): boolean {
     const payload = {
       messageType: 'data-sync',
       data: {
@@ -124,11 +124,14 @@ class BrowserWebSocket implements IWebSocket {
       if (this.ws?.readyState === WebSocket.OPEN) {
         this._config.logger.debug('requesting data');
         this.ws?.send(JSON.stringify(payload));
+        return true;
       } else {
         this._config.logger.error(`not requesting data because socket not open`);
+        return false;
       }
     } catch (err) {
       this._config.logger.debug(err);
+      return false;
     }
   }
 

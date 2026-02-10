@@ -41,8 +41,13 @@ export class TimeoutError extends Error {
 }
 
 export function isHttpRecoverable(status: number) {
+  if (status === undefined) {
+    return false;
+  }
+
   if (status >= 400 && status < 500) {
     return status === 400 || status === 408 || status === 429;
   }
+
   return true;
 }

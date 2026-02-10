@@ -16,7 +16,7 @@ export interface IWebSocket {
   connect: () => void;
   close: () => void;
   config: (param: IWebSocketConfig) => void;
-  identify: (user: IUser) => void;
+  identify: (user: IUser) => boolean;
 }
 
 export interface IWebSocketWithEvents extends IWebSocket, IEventEmitter {
