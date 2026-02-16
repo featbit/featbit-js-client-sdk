@@ -27,6 +27,7 @@ import { DataSyncModeEnum } from "./data-sync/DataSyncMode";
 import { IUser } from "./options/IUser";
 import { UserValidator } from "./options/Validators";
 import { FlagValue, VariationDataType } from "./evaluation";
+import { StoreItemOriginEnum } from "./store";
 
 enum ClientState {
   Initializing,
@@ -380,7 +381,10 @@ export class FbClientCore implements IFbClientCore {
       );
     } else {
       // send event
-      this.eventProcessor!.record(evalResult.toEvalEvent(this.config.user));
+      const flag = this.store?.get(DataKinds.Flags, flagKey);
+      if (flag?.origin === StoreItemOriginEnum.Remote) {
+        this.eventProcessor!.record(evalResult.toEvalEvent(this.config.user));
+      }
     }
 
     let converter: (value: string) => IConvertResult<any>;
