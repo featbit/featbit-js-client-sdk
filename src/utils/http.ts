@@ -2,6 +2,7 @@ import { IInfo } from "../platform/IInfo";
 
 export type Headers = {
   Authorization: string;
+  'User-Agent': string;
   'X-User-Agent': string;
   'Content-Type': string;
 };
@@ -15,6 +16,7 @@ export function defaultHeaders(
   const headers: Headers = {
     'Content-Type': 'application/json',
     'X-User-Agent': userAgent ?? `${info.appType}/${version}`,
+    'User-Agent': userAgent ?? `${info.appType}/${version}`,
     'Authorization': sdkKey
   };
 
