@@ -11,6 +11,7 @@ export class FlagBuilder {
   private _sendToExperiment: boolean = false;
   private _variation: FlagValue = '';
   private _variations: IVariation[] = [];
+  private _matchReason: string = '';
 
   id(id: string): FlagBuilder {
     this._id = id;
@@ -52,6 +53,11 @@ export class FlagBuilder {
     return this;
   }
 
+  matchReason(matchReason: string): FlagBuilder {
+    this._matchReason = matchReason;
+    return this;
+  }
+
   build(): IFlag {
     return {
       id: this._id!,
@@ -62,7 +68,8 @@ export class FlagBuilder {
       variations: this._variations,
       sendToExperiment: this._sendToExperiment,
       variation: this._variation,
-      timestamp: new Date().getTime()
+      timestamp: new Date().getTime(),
+      matchReason: this._matchReason,
     };
   }
 }

@@ -22,7 +22,7 @@ export default class EvalResult {
   }
 
   static matched(val: IFlag) {
-    return new EvalResult(ReasonKinds.Match, val, 'target match');
+    return new EvalResult(ReasonKinds.Match, val, val.matchReason);
   }
 
   toEvalEvent(user: IUser): EvalEvent | null {

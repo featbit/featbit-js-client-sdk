@@ -28,5 +28,6 @@ export interface IFlag extends IFlagBase {
   key: string, // the same value to id
   variations: IVariation[],// the same value to variationOptions
   version: number,
-  origin: StoreItemOriginEnum
+  origin: StoreItemOriginEnum,
+  matchReason: string,
 }

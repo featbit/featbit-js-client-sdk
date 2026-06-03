@@ -1,5 +1,5 @@
 /**
- * Different kinds of error which may be encountered during evaluation.
+ * Different kinds of reasons which may be encountered during evaluation.
  */
 export enum ReasonKinds {
   ClientNotReady = 'ClientNotReady',
