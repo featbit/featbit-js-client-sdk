@@ -43,6 +43,7 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
       Promise.resolve().then(() => {
         if (checkForChanges) {
           const updatedKeys = Object.keys(newData)
+            .filter((key) => key !== 'version')
             .flatMap((namespace) => {
               const oldDataForKind = oldData?.[namespace] || {};
               const newDataForKind = newData[namespace];
@@ -72,6 +73,7 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
     }
 
     const updatedKeys = Object.keys(newData)
+    .filter((key) => key !== 'version')
     .flatMap((namespace) => {
       const oldDataForKind = oldData?.[namespace] || {};
       const newDataForKind = newData[namespace];
