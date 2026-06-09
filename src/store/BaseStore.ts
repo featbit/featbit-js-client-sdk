@@ -17,7 +17,6 @@ export class BaseStore implements IStore {
     this._user = {...user};
 
     await this.saveUser();
-    await this.loadStoreFromStorage();
   }
 
   get user(): IUser {

@@ -4,3 +4,4 @@ export * from './ValueConverters';
 export * from './VoidFunction';
 export * from './serializeUser';
 export * from './debounce';
+export * from './deepCopy';
