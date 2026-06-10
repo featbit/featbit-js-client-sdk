@@ -1,20 +1,19 @@
 {
   "compilerOptions": {
     "target": "es2016",
-    "module": "ESNext",
+    "module": "CommonJS",
     "lib": [
       "es2019",
       "dom"
     ],
-    "declaration": true,
+    "declaration": false,
     "esModuleInterop": true,
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
-    "declarationMap": true,
     "strict": true,
-    "outDir": "./dist/esm",
+    "outDir": "./dist/cjs",
     "skipLibCheck": true
   },
   "include": [
