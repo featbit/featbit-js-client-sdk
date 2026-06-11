@@ -17,7 +17,9 @@ export class BaseStore implements IStore {
     this._user = {...user};
 
     await this.saveUser();
-    this.store.version = 0; // this forces the sdk to request full data from server
+
+    // load version
+    await this.loadStoreFromStorage();
   }
 
   get user(): IUser {

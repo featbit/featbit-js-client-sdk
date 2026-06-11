@@ -35,6 +35,12 @@ export default class InMemoryStore extends BaseStore {
     const userHash = await hashSerializeUser(this._user);
     const storageKey = `${StoreStorageKey}-${userHash}`;
 
-    this.store = deepCopy(this.allStores[storageKey]) ?? { flags: {}, version: 0 };
+    const store = this.allStores[storageKey];
+
+    if (!!store) {
+      this.store = store;
+    } else {
+      this.store.version = 0;
+    }
   }
 }

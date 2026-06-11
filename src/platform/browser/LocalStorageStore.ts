@@ -53,10 +53,7 @@ export default class LocalStorageStore extends BaseStore {
     if (!!store) {
       this.store = store;
     } else {
-      this.store = {
-        flags: {},
-        version: 0
-      };
+      this.store.version = 0;
     }
   }
 }
