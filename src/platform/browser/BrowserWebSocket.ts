@@ -35,6 +35,7 @@ class BrowserWebSocket implements IWebSocket {
     that.ws?.addEventListener('open', function (this: WebSocket, event) {
       // this is the websocket instance to which the current listener is binded to, it's different from that.socket
       that._config.logger.info(`WebSocket connection succeeded, connection time: ${ Date.now() - startTime } ms`);
+      that.retryCounter = 0;
       that.doDataSync();
       that.sendPingMessage();
     });
