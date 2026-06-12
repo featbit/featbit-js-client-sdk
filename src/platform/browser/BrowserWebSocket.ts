@@ -15,6 +15,7 @@ class BrowserWebSocket implements IWebSocket {
   private closed: boolean = false;
 
   private _config: IWebSocketConfig = {} as IWebSocketConfig;
+  private livenessTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
     this.emitter = new EventEmitter();
@@ -38,6 +39,7 @@ class BrowserWebSocket implements IWebSocket {
       that.retryCounter = 0;
       that.doDataSync();
       that.sendPingMessage();
+      that.bumpLiveness();
     });
 
     // Connection closed
@@ -58,6 +60,7 @@ class BrowserWebSocket implements IWebSocket {
 
     // Listen for messages
     that.ws?.addEventListener('message', function (event) {
+      that.bumpLiveness();
       const message = JSON.parse(event.data as string);
       if (message.messageType === 'data-sync') {
         if (message.data.userKeyId !== that._config.user.keyId) {
@@ -79,6 +82,7 @@ class BrowserWebSocket implements IWebSocket {
 
   close() {
     this.closed = true;
+    clearTimeout(this.livenessTimer);
     this.ws?.close(4003, 'The client is closed by user');
     this.ws = undefined;
   }
@@ -89,6 +93,14 @@ class BrowserWebSocket implements IWebSocket {
     }
 
     this._config = {...param};
+  }
+
+  private bumpLiveness() {
+    clearTimeout(this.livenessTimer);
+    this.livenessTimer = setTimeout(() => {
+      this._config.logger.warn('no server activity within timeout, recycling socket');
+      this.ws?.close(); // triggers 'close' -> reconnect()
+    }, this._config.pingInterval * 2);
   }
 
   private sendPingMessage() {
