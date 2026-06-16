@@ -17,6 +17,10 @@ export default class EvalResult {
   ) {
   }
 
+  static flagArchived(flagKey: string): EvalResult {
+    return new EvalResult(ReasonKinds.FlagNotFound, null, `flag archived: ${ flagKey }`);
+  }
+
   static flagNotFound(flagKey: string) {
     return new EvalResult(ReasonKinds.FlagNotFound, null, `flag not found: ${ flagKey }`);
   }

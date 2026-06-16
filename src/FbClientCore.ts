@@ -108,7 +108,7 @@ export class FbClientCore implements IFbClientCore {
     this.store = this.config.storeFactory(clientContext);
     await this.store.identify(this.config.user);
     this.dataSourceUpdates = new DataSourceUpdates(this.store, hasEventListeners, onUpdate);
-    this.evaluator = new Evaluator(this.store);
+    this.evaluator = new Evaluator(this.store, this.logger);
 
     // use bootstrap provider to populate store
     await this.config.bootstrapProvider.populate(this.config.user.keyId, this.dataSourceUpdates);
