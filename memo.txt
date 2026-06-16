@@ -11,7 +11,6 @@ lib-esm/		// ES5(esmodule) + source + .d.ts
 3. Ref
     pageview: https://dev.to/zigabrencic/analytics-with-vanilla-js-page-views-47pb
 
-
 for error: 'this' implicitly has type 'any' because it does not have a type annotation
 ref: https://www.valentinog.com/blog/this/
 
