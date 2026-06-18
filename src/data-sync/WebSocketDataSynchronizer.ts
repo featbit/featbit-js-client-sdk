@@ -20,7 +20,8 @@ class WebSocketDataSynchronizer implements IDataSynchronizer {
     socket: IWebSocketWithEvents,
     private readonly getStoreTimestamp: () => number,
     private readonly listeners: Map<EventName, ProcessStreamResponse>,
-    webSocketPingInterval: number
+    webSocketPingInterval: number,
+    private readonly onNetworkError?: () => void
   ) {
     const {logger, streamingUri} = clientContext;
 
@@ -50,6 +51,13 @@ class WebSocketDataSynchronizer implements IDataSynchronizer {
         }
       });
     })
+
+    if (this.onNetworkError) {
+      this.socket?.once('network-error', () => {
+        this.logger?.warn('WebSocket connection failed, falling back to polling');
+        this.onNetworkError!();
+      });
+    }
   }
 
   async identify(user: IUser): Promise<void> {

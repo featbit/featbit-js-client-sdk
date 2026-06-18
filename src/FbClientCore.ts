@@ -130,6 +130,22 @@ export class FbClientCore implements IFbClientCore {
         patch: () => this.initSuccess()
       });
 
+      const createPollingSync = () => new PollingDataSynchronizer(
+        this.config,
+        new Requestor(this.config.sdkKey, this.config, this.platform.info, this.platform.requests),
+        () => this.store!.version,
+        listeners,
+        (e) => this.dataSourceErrorHandler(e),
+      );
+
+      const onWebSocketNetworkError = () => {
+        this.logger?.warn('WebSocket connection failed on initial attempt, falling back to polling');
+        this.dataSynchronizer?.stop();
+        const pollSync = createPollingSync();
+        this.dataSynchronizer = pollSync;
+        pollSync.start();
+      };
+
       const dataSynchronizer = this.config.dataSyncMode === DataSyncModeEnum.STREAMING
         ? new WebSocketDataSynchronizer(
           this.config.sdkKey,
@@ -138,15 +154,10 @@ export class FbClientCore implements IFbClientCore {
           this.platform.webSocket,
           () => this.store!.version,
           listeners,
-          this.config.webSocketPingInterval
+          this.config.webSocketPingInterval,
+          this.config.enablePollingFallback ? onWebSocketNetworkError : undefined
         )
-        : new PollingDataSynchronizer(
-          this.config,
-          new Requestor(this.config.sdkKey, this.config, this.platform.info, this.platform.requests),
-          () => this.store!.version,
-          listeners,
-          (e) => this.dataSourceErrorHandler(e),
-        );
+        : createPollingSync();
 
       this.dataSynchronizer = this.config.dataSynchronizerFactory?.(
         clientContext,

@@ -4,7 +4,6 @@ import { IOptions } from "./IOptions";
 import { IDataSynchronizer } from "../data-sync/IDataSynchronizer";
 import { DataSyncModeEnum } from "../data-sync/DataSyncMode";
 import { IUser } from "./IUser";
-import { IBootstrapProvider } from "../bootstrap";
 import { IFlagBase } from "../evaluation";
 
 export interface IValidatedOptions {
@@ -20,6 +19,7 @@ export interface IValidatedOptions {
   disableEvents: boolean;
   pollingInterval: number;
   offline: boolean;
+  enablePollingFallback: boolean;
   store: IStore | ((options: IOptions) => IStore);
   dataSynchronizer?: IDataSynchronizer;
   logger?: ILogger;
