@@ -35,6 +35,15 @@ export interface IOptions {
   dataSyncMode?: DataSyncModeEnum;
 
   /**
+   * Whether the SDK should fall back to polling when the WebSocket connection cannot be established.
+   * Only applies when {@link dataSyncMode} is {@link DataSyncModeEnum.STREAMING}.
+   * When enabled, {@link pollingUri} must also be set.
+   *
+   * Defaults to false.
+   */
+  enablePollingFallback?: boolean;
+
+  /**
    * The base URI of the data-sync service, mandatory if the {@link dataSyncMode} is set to {@link DataSyncModeEnum.STREAMING}.
    */
   streamingUri?: string;

@@ -118,6 +118,30 @@ const fbClient = new FbClientBuilder()
     .build();
 ```
 
+#### Streaming with Polling Fallback
+
+When using streaming mode, the SDK can automatically fall back to polling if the WebSocket connection cannot be established on startup. This is **disabled by default** and must be explicitly enabled.
+
+> **_NOTE:_** `pollingUri` must be set when enabling the polling fallback, otherwise the fallback has no endpoint to poll.
+
+```javascript
+import { FbClientBuilder, UserBuilder } from "@featbit/js-client-sdk";
+
+const user = new UserBuilder('a-unique-key-of-user')
+    .name('bob')
+    .build();
+
+// opt in to polling fallback — pollingUri is required
+const fbClient = new FbClientBuilder()
+    .sdkKey("your_sdk_key")
+    .streamingUri('ws://localhost:5100')
+    .pollingUri('http://localhost:5100')   // required for fallback
+    .eventsUri("http://localhost:5100")
+    .enablePollingFallback(true)
+    .user(user)
+    .build();
+```
+
 #### IUser
 
 `IUser` defines the attributes of a user for whom you are evaluating feature flags. IUser has two built-in attributes: key and name. The only mandatory attribute of a IUser is the key, which must uniquely identify each user.

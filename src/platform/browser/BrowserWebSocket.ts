@@ -13,6 +13,7 @@ class BrowserWebSocket implements IWebSocket {
   private ws?: WebSocket;
   private retryCounter = 0;
   private closed: boolean = false;
+  private hasConnected: boolean = false;
 
   private _config: IWebSocketConfig = {} as IWebSocketConfig;
   private livenessTimer: ReturnType<typeof setTimeout> | undefined;
@@ -36,6 +37,7 @@ class BrowserWebSocket implements IWebSocket {
     that.ws?.addEventListener('open', function (this: WebSocket, event) {
       // this is the websocket instance to which the current listener is binded to, it's different from that.socket
       that._config.logger.info(`WebSocket connection succeeded, connection time: ${ Date.now() - startTime } ms`);
+      that.hasConnected = true;
       that.retryCounter = 0;
       that.doDataSync();
       that.sendPingMessage();
@@ -56,6 +58,10 @@ class BrowserWebSocket implements IWebSocket {
     that.ws?.addEventListener('error', function (event) {
       // reconnect
       that._config.logger.debug('error');
+      if (!that.hasConnected) {
+        that._config.logger.warn('WebSocket initial connection failed, emitting network-error');
+        that.emitter.emit('network-error');
+      }
     });
 
     // Listen for messages

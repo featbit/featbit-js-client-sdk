@@ -43,6 +43,7 @@ const validations: Record<string, TypeValidator> = {
   disableEvents: TypeValidators.Boolean,
   pollingInterval: TypeValidators.Number,
   offline: TypeValidators.Boolean,
+  enablePollingFallback: TypeValidators.Boolean,
   dataSyncMode: TypeValidators.String,
   bootstrap: TypeValidators.Bootstrap,
   user: TypeValidators.User
@@ -65,6 +66,7 @@ export const defaultValues: IValidatedOptions = {
   disableEvents: false,
   pollingInterval: 30000,
   offline: false,
+  enablePollingFallback: false,
   store: (options: IOptions) => new InMemoryStore(),
   bootstrap: undefined,
   user: undefined,
@@ -158,6 +160,8 @@ export default class Configuration {
 
   public readonly offline: boolean;
 
+  public readonly enablePollingFallback: boolean;
+
   public readonly dataSyncMode: DataSyncModeEnum;
 
   public readonly bootstrapProvider: IBootstrapProvider = new NullBootstrapProvider();
@@ -204,6 +208,7 @@ export default class Configuration {
     this.pollingInterval = validatedOptions.pollingInterval;
 
     this.offline = validatedOptions.offline;
+    this.enablePollingFallback = validatedOptions.enablePollingFallback;
     if (validatedOptions.bootstrap && validatedOptions.bootstrap.length > 0) {
       try {
         this.bootstrapProvider = new JsonBootstrapProvider(validatedOptions.bootstrap);

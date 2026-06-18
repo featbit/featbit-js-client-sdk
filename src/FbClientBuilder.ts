@@ -103,6 +103,14 @@ export class FbClientBuilder {
     return this;
   }
 
+    /**
+   * Refer to {@link IOptions.enablePollingFallback}.
+   */
+  enablePollingFallback(enablePollingFallback: boolean): FbClientBuilder {
+    this._options.enablePollingFallback = enablePollingFallback;
+    return this;
+  }
+
   /**
    * Refer to {@link IOptions.pollingInterval}.
    */
