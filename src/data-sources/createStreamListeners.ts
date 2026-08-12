@@ -17,14 +17,15 @@ const createPutListener = (
   },
 ) => ({
   deserializeData: deserializeAll,
-  processJson: async (userKeyId: string, {flags}: Flags) => {
+  processJson: (userKeyId: string, {flags}: Flags) => {
     const initData: IStoreDataStorage = {
       flags: flags,
       version: 0
     };
 
     logger?.debug('Initializing all data');
-    await dataSourceUpdates.init(userKeyId, initData, onPutCompleteHandler);
+    dataSourceUpdates.init(userKeyId, initData);
+    onPutCompleteHandler?.();
   },
 });
 
@@ -35,7 +36,7 @@ const createPatchListener = (
   },
 ) => ({
   deserializeData: deserializePatch,
-  processJson: async (userKeyId: string, data: IPatchData[]) => {
+  processJson: (userKeyId: string, data: IPatchData[]) => {
     if (data?.length === 0) {
       onPatchCompleteHandler?.();
       return;
@@ -44,7 +45,8 @@ const createPatchListener = (
     if (data?.length > 0) {
       for(const item of data) {
         logger?.debug(`Updating ${ item.data.key } in ${ item.kind.namespace }`);
-        await dataSourceUpdates.upsert(userKeyId, item.kind, item.data, onPatchCompleteHandler);
+        dataSourceUpdates.upsert(userKeyId, item.kind, item.data);
+        onPatchCompleteHandler?.();
       }
     }
   },

@@ -103,15 +103,15 @@ export class FbClientCore implements IFbClientCore {
     this.init(onUpdate, hasEventListeners);
   }
 
-  private async init(onUpdate: (keys: string[]) => void, hasEventListeners: () => boolean) {
+  private init(onUpdate: (keys: string[]) => void, hasEventListeners: () => boolean) {
     const clientContext = new ClientContext(this.config.sdkKey, this.config, this.platform);
     this.store = this.config.storeFactory(clientContext);
-    await this.store.identify(this.config.user);
+    this.store.identify(this.config.user);
     this.dataSourceUpdates = new DataSourceUpdates(this.store, hasEventListeners, onUpdate);
     this.evaluator = new Evaluator(this.store, this.logger);
 
     // use bootstrap provider to populate store
-    await this.config.bootstrapProvider.populate(this.config.user.keyId, this.dataSourceUpdates);
+    this.config.bootstrapProvider.populate(this.config.user.keyId, this.dataSourceUpdates);
 
     if (this.config.offline) {
       this.eventProcessor = new NullEventProcessor();
@@ -189,7 +189,7 @@ export class FbClientCore implements IFbClientCore {
 
     this.config.user = user;
 
-    await this.store!.identify(user);
+    this.store!.identify(user);
 
     try {
       await this.dataSynchronizer!.identify(user);
@@ -203,7 +203,7 @@ export class FbClientCore implements IFbClientCore {
       version: newVersion
     }
     if (Object.keys(newFlags).length === 0) {
-      await this.config.bootstrapProvider.populate(user.keyId, this.dataSourceUpdates!);
+      this.config.bootstrapProvider.populate(user.keyId, this.dataSourceUpdates!);
     } else {
       this.dataSourceUpdates?.checkUpdates(oldData, newData);
     }

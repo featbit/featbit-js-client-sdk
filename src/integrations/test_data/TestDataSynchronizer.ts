@@ -21,15 +21,15 @@ export default class TestDataSynchronizer implements IDataSynchronizer {
     this.flags = [...initialFlags];
   }
 
-  async start() {
+  start() {
     this.listeners.forEach(({deserializeData, processJson }) => {
       const data = deserializeData(this.flags);
       processJson(this.userKeyId, data);
     });
   }
 
-  async identify(): Promise<void> {
-    // no-op
+  identify(): Promise<void> {
+    return Promise.resolve();
   }
 
   stop() {
@@ -40,11 +40,7 @@ export default class TestDataSynchronizer implements IDataSynchronizer {
     this.stop();
   }
 
-  async upsert(kind: IDataKind, value: IKeyedStoreItem) {
-    return new Promise<void>((resolve) => {
-      this.dataSourceUpdates.upsert(this.userKeyId, kind, value, () => {
-        resolve();
-      });
-    });
+  upsert(kind: IDataKind, value: IKeyedStoreItem): void {
+    this.dataSourceUpdates.upsert(this.userKeyId, kind, value);
   }
 }

@@ -38,7 +38,7 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
 
     const startTime = Date.now();
     this.logger?.debug('Polling for feature flag and segments updates');
-    this.requestor.requestData(this.getStoreTimestamp(), this.user, async (err, body) => {
+    this.requestor.requestData(this.getStoreTimestamp(), this.user, (err, body) => {
       const elapsed = Date.now() - startTime;
       const sleepFor = Math.max(this.pollingInterval - elapsed, 0);
 
@@ -84,7 +84,7 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
         }
 
         const data = processStreamResponse?.deserializeData?.(featureFlags);
-        await processStreamResponse?.processJson?.(userKeyId, data);
+        processStreamResponse?.processJson?.(userKeyId, data);
         resolve?.();
         // Falling through, there was some type of error, we need to trigger
         // a new poll.
@@ -95,7 +95,7 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
     });
   }
 
-  async identify(user: IUser): Promise<void> {
+  identify(user: IUser): Promise<void> {
     this.user = {...user};
     if (this.timeoutHandle) {
       clearTimeout(this.timeoutHandle);
@@ -123,6 +123,5 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
     this.stopped = true;
   }
 }
-
 
 

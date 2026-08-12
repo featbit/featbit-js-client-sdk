@@ -10,6 +10,7 @@ export class NullDataSynchronizer implements IDataSynchronizer {
   stop(): void {
   }
 
-  async identify(): Promise<void> {
+  identify(): Promise<void> {
+    return Promise.resolve();
   }
 }

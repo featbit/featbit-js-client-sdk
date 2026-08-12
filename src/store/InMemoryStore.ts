@@ -21,18 +21,18 @@ export default class InMemoryStore extends BaseStore {
     return 'in-memory-store'
   }
 
-  protected async saveUser(): Promise<void> {
+  protected saveUser(): void {
     // For in-memory store, this is a no-op.
   }
 
-  protected override async dumpStoreToStorage() {
-    const userHash = await hashSerializeUser(this._user);
+  protected override dumpStoreToStorage() {
+    const userHash = hashSerializeUser(this._user);
     const storageKey = `${StoreStorageKey}-${userHash}`;
     this.allStores[storageKey] = deepCopy(this.store);
   }
 
-  protected override async loadStoreFromStorage() {
-    const userHash = await hashSerializeUser(this._user);
+  protected override loadStoreFromStorage() {
+    const userHash = hashSerializeUser(this._user);
     const storageKey = `${StoreStorageKey}-${userHash}`;
 
     const store = this.allStores[storageKey];

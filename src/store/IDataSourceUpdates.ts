@@ -19,11 +19,8 @@ export interface IDataSourceUpdates {
    *   An object in which each key is the "namespace" of a collection (e.g. `"features"`) and
    *   the value is an object that maps keys to entities. The actual type of this parameter is
    *   `interfaces.FullDataSet<VersionedData>`.
-   *
-   * @param callback
-   *   Will be called when the store has been initialized.
    */
-  init(userKeyId: string, allData: IStoreDataStorage, callback?: () => void): Promise<void>;
+  init(userKeyId: string, allData: IStoreDataStorage): void;
 
   /**
    * Compare old and new data, check if any update exists
@@ -38,11 +35,8 @@ export interface IDataSourceUpdates {
    *   An object in which each key is the "namespace" of a collection (e.g. `"features"`) and
    *   the value is an object that maps keys to entities. The actual type of this parameter is
    *   `interfaces.FullDataSet<VersionedData>`.
-   *
-   * @param callback
-   *   Will be called when the store has been initialized.
    */
-  checkUpdates(oldData: IStoreDataStorage, newData: IStoreDataStorage, callback?: () => void): void;
+  checkUpdates(oldData: IStoreDataStorage, newData: IStoreDataStorage): void;
 
   /**
    * Updates or inserts an item in the specified collection. For updates, the object will only be
@@ -60,9 +54,6 @@ export interface IDataSourceUpdates {
    *   should check the `version` property of this object, and should *not* overwrite any
    *   existing data if the existing `version` is greater than or equal to that value.
    *   The actual type of this parameter is {@link IKeyedStoreItem}.
-   *
-   * @param callback
-   *   Will be called after the upsert operation is complete.
    */
-  upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem, callback: () => void): Promise<void>;
+  upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem): void;
 }

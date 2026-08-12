@@ -49,7 +49,7 @@ export default class TestData {
     }
   }
 
-  update(flag: IFlag): Promise<void> {
+  update(flag: IFlag): void {
     const oldVersion = this.store.get(DataKinds.Flags, flag.id)?.version || 0;
     const newFlag = { ...flag, version: oldVersion + 1, key: flag.id };
 
