@@ -16,17 +16,14 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
   ) {
   }
 
-  isCurrentUser(userKeyId: string): boolean {
-    return userKeyId === this.store.user.keyId;
-  }
-
-  init(userKeyId: string, newData: IStoreDataStorage): boolean {
-    if (!this.isCurrentUser(userKeyId)) {
-      return false;
+  async init(userKeyId: string, newData: IStoreDataStorage, callback?: () => void): Promise<void> {
+    if (userKeyId !== this.store.user.keyId) {
+      callback?.();
+      return;
     }
 
     const checkForChanges = this.hasEventListeners();
-    const doInit = (oldData?: IStoreDataStorage) => {
+    const doInit = async (oldData?: IStoreDataStorage) => {
       // When init method is not run from local bootstrap and if bootstrap data is configured when starting the app and the server does not return those flags
       // We should keep the local flags in the store as it is
       const isRunFromLocal = Object.keys(newData.flags).some((key) => newData.flags[key].origin === StoreItemOriginEnum.Local);
@@ -41,7 +38,7 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
         newData = { version: newData.version, flags: {...newData.flags, ...localOnlyFlags}};
       }
 
-      this.store.init(newData);
+      await this.store.init(newData);
 
       Promise.resolve().then(() => {
         if (checkForChanges) {
@@ -57,6 +54,7 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
           updatedKeys.length > 0 && this.onChange(updatedKeys);
         }
       });
+      callback?.();
     };
 
     const [flags, version] = this.store.all(DataKinds.Flags);
@@ -64,11 +62,10 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
       flags,
       version
     };
-    doInit(oldData);
-    return true;
+    await doInit(oldData);
   }
 
-  checkUpdates(oldData: IStoreDataStorage, newData: IStoreDataStorage): void {
+  checkUpdates(oldData: IStoreDataStorage, newData: IStoreDataStorage, callback?: () => void): void {
     const checkForChanges = this.hasEventListeners();
 
     if (!checkForChanges) {
@@ -85,30 +82,34 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
       .filter((key: string) => this.isUpdated(oldDataForKind && oldDataForKind[key], newDataForKind && newDataForKind[key]));
     });
     updatedKeys.length > 0 && this.onChange(updatedKeys);
+
+    callback?.();
   }
 
-  upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem): boolean {
-    if (!this.isCurrentUser(userKeyId)) {
-      return false;
+  async upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem, callback: () => void): Promise<void> {
+    if (userKeyId !== this.store.user.keyId) {
+      callback?.();
+      return;
     }
 
     const {key} = data;
     const checkForChanges = this.hasEventListeners();
-    const doUpsert = (oldItem?: IStoreItem) => {
-      this.store.upsert(kind, data);
+    const doUpsert = async (oldItem?: IStoreItem) => {
+      await this.store.upsert(kind, data);
       Promise.resolve().then(() => {
         if (checkForChanges && this.isUpdated(oldItem, data)) {
           this.onChange([key]);
         }
       });
+
+      callback?.();
     };
     if (checkForChanges) {
       const item = this.store.get(kind, key);
-      doUpsert(item || undefined);
+      await doUpsert(item || undefined);
     } else {
-      doUpsert();
+      await doUpsert();
     }
-    return true;
   }
 
   private isUpdated(oldData?: IStoreItem, newData?: IStoreItem): boolean {

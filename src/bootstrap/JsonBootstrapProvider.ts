@@ -18,11 +18,18 @@ export class JsonBootstrapProvider implements IBootstrapProvider {
     };
   }
 
-  populate(userKeyId: string, dataSourceUpdates: IDataSourceUpdates): void {
-    if (isNullOrUndefined(this.dataSet)) {
-      return;
-    }
+  populate(userKeyId: string, dataSourceUpdates: IDataSourceUpdates, callback?: () => void): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (isNullOrUndefined(this.dataSet)) {
+        return resolve();
+      }
 
-    dataSourceUpdates.init(userKeyId, this.dataSet!);
+      const internalCallback = () => {
+        resolve();
+        callback?.();
+      }
+
+      dataSourceUpdates.init(userKeyId, this.dataSet!, internalCallback);
+    });
   }
 }

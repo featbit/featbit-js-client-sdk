@@ -26,18 +26,18 @@ export default class LocalStorageStore extends BaseStore {
   }
 
   // This method needs to be overridden in the child class
-  protected saveUser(): void {
+  protected async saveUser(): Promise<void> {
     localStorage.setItem(CurrentUserStorageKey, serializeUser(this._user));
   }
 
-  protected override dumpStoreToStorage() {
-    const userHash = hashSerializeUser(this._user);
+  protected override async dumpStoreToStorage() {
+    const userHash = await hashSerializeUser(this._user);
     const storageKey = `${StoreStorageKey}-${userHash}`;
     localStorage.setItem(storageKey, JSON.stringify(this.store));
   }
 
-  protected override loadStoreFromStorage() {
-    const userHash = hashSerializeUser(this._user);
+  protected override async loadStoreFromStorage() {
+    const userHash = await hashSerializeUser(this._user);
     const storageKey = `${StoreStorageKey}-${userHash}`;
     const dataStoreStr = localStorage.getItem(storageKey);
     let store: IStoreDataStorage | null = null;

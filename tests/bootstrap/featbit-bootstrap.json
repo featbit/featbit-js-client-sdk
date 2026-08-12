@@ -1,7 +1,6 @@
 [
   {
     "id": "flag1",
-    "matchReason": "target match",
     "variationType": "boolean",
     "variation": "true",
     "variationOptions": [

@@ -17,18 +17,14 @@ const createPutListener = (
   },
 ) => ({
   deserializeData: deserializeAll,
-  processJson: (userKeyId: string, {flags}: Flags) => {
+  processJson: async (userKeyId: string, {flags}: Flags) => {
     const initData: IStoreDataStorage = {
       flags: flags,
       version: 0
     };
 
     logger?.debug('Initializing all data');
-    const accepted = dataSourceUpdates.init(userKeyId, initData);
-    if (accepted) {
-      onPutCompleteHandler?.();
-    }
-    return accepted;
+    await dataSourceUpdates.init(userKeyId, initData, onPutCompleteHandler);
   },
 });
 
@@ -39,28 +35,18 @@ const createPatchListener = (
   },
 ) => ({
   deserializeData: deserializePatch,
-  processJson: (userKeyId: string, data: IPatchData[]) => {
+  processJson: async (userKeyId: string, data: IPatchData[]) => {
     if (data?.length === 0) {
-      const accepted = dataSourceUpdates.isCurrentUser(userKeyId);
-      if (accepted) {
-        onPatchCompleteHandler?.();
-      }
-      return accepted;
+      onPatchCompleteHandler?.();
+      return;
     }
 
     if (data?.length > 0) {
-      let accepted = true;
       for(const item of data) {
         logger?.debug(`Updating ${ item.data.key } in ${ item.kind.namespace }`);
-        accepted = dataSourceUpdates.upsert(userKeyId, item.kind, item.data) && accepted;
+        await dataSourceUpdates.upsert(userKeyId, item.kind, item.data, onPatchCompleteHandler);
       }
-      if (accepted) {
-        onPatchCompleteHandler?.();
-      }
-      return accepted;
     }
-
-    return false;
   },
 });
 

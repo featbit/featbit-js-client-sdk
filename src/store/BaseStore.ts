@@ -13,20 +13,20 @@ export class BaseStore implements IStore {
   constructor() {
   }
 
-  identify(user: IUser) {
+  async identify(user: IUser) {
     this._user = {...user};
 
-    this.saveUser();
+    await this.saveUser();
 
     // load version
-    this.loadStoreFromStorage();
+    await this.loadStoreFromStorage();
   }
 
   get user(): IUser {
     return this._user;
   }
 
-  protected addItem(kind: IDataKind, key: string, item: IStoreItem) {
+  protected async addItem(kind: IDataKind, key: string, item: IStoreItem) {
     let items = this.store[kind.namespace];
     if (!items) {
       items = {};
@@ -48,7 +48,7 @@ export class BaseStore implements IStore {
       this.store.version = item.version;
     }
 
-    this.dumpStoreToStorage();
+    await this.dumpStoreToStorage();
   }
 
   get(kind: IDataKind, key: string): IStoreItem | null {
@@ -76,7 +76,7 @@ export class BaseStore implements IStore {
     return [result, this.store.version];
   }
 
-  init(allData: IStoreDataStorage) {
+  async init(allData: IStoreDataStorage) {
     this.store = allData as IStoreDataStorage;
 
     Object.keys(allData).map(namespace => {
@@ -88,12 +88,12 @@ export class BaseStore implements IStore {
       })
     });
 
-    this.dumpStoreToStorage();
+    await this.dumpStoreToStorage();
     this.initCalled = true;
   }
 
-  upsert(kind: IDataKind, data: IKeyedStoreItem) {
-    this.addItem(kind, data.key, data);
+  async upsert(kind: IDataKind, data: IKeyedStoreItem) {
+    await this.addItem(kind, data.key, data);
   }
 
   initialized(): boolean {
@@ -115,14 +115,14 @@ export class BaseStore implements IStore {
   }
 
   // This method needs to be overridden in the child class
-  protected saveUser(): void {
+  protected async saveUser(): Promise<void> {
   }
 
   // This method needs to be overridden in the child class
-  protected loadStoreFromStorage(): void {
+  protected async loadStoreFromStorage(): Promise<void> {
   }
 
   // This method needs to be overridden in the child class
-  protected dumpStoreToStorage(): void {
+  protected async dumpStoreToStorage(): Promise<void> {
   }
 }

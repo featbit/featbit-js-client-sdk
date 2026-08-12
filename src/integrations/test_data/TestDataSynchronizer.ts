@@ -5,14 +5,14 @@ import { IDataSourceUpdates } from "../../store/IDataSourceUpdates";
 import { VoidFunction } from "../../utils/VoidFunction";
 import { IDataKind } from "../../IDataKind";
 import { IKeyedStoreItem } from "../../store/store";
-import { IUser } from "../../options/IUser";
 
 export default class TestDataSynchronizer implements IDataSynchronizer {
   private readonly flags: IFlag[];
+  private readonly userKeyId: string = 'test-user-key-id';
+
   constructor(
     private dataSourceUpdates: IDataSourceUpdates,
     initialFlags: IFlag[],
-    private userKeyId: string,
     private readonly onStop: VoidFunction,
     private readonly listeners: Map<EventName, ProcessStreamResponse>
   ) {
@@ -21,16 +21,15 @@ export default class TestDataSynchronizer implements IDataSynchronizer {
     this.flags = [...initialFlags];
   }
 
-  start() {
+  async start() {
     this.listeners.forEach(({deserializeData, processJson }) => {
       const data = deserializeData(this.flags);
       processJson(this.userKeyId, data);
     });
   }
 
-  identify(user: IUser): Promise<void> {
-    this.userKeyId = user.keyId;
-    return Promise.resolve();
+  async identify(): Promise<void> {
+    // no-op
   }
 
   stop() {
@@ -41,7 +40,11 @@ export default class TestDataSynchronizer implements IDataSynchronizer {
     this.stop();
   }
 
-  upsert(kind: IDataKind, value: IKeyedStoreItem): void {
-    this.dataSourceUpdates.upsert(this.userKeyId, kind, value);
+  async upsert(kind: IDataKind, value: IKeyedStoreItem) {
+    return new Promise<void>((resolve) => {
+      this.dataSourceUpdates.upsert(this.userKeyId, kind, value, () => {
+        resolve();
+      });
+    });
   }
 }

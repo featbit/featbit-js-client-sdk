@@ -12,5 +12,10 @@ export class NullBootstrapProvider implements IBootstrapProvider {
     };
   }
 
-  populate(userKeyId: string, dataSourceUpdates: IDataSourceUpdates): void {}
+  populate(userKeyId: string, dataSourceUpdates: IDataSourceUpdates, callback?: () => void): Promise<void> {
+    return new Promise((resolve, reject) => {
+      resolve();
+      callback?.();
+    });
+  }
 }
