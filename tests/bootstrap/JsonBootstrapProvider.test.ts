@@ -13,15 +13,15 @@ describe('given a JsonBootstrapProvider', () => {
     expect(provider).not.toBeNull();
   });
 
-  it('populate store', () => {
+  it('populate store', async () => {
     const provider = new JsonBootstrapProvider(testData as unknown as IFlagBase[]);
     const user = new UserBuilder('anonymous').build();
     const store: IStore = new InMemoryStore();
-    store.identify(user);
+    await store.identify(user);
 
     const dataSourceUpdates = new DataSourceUpdates(store, () => false, () => {})
 
-    provider.populate(user.keyId, dataSourceUpdates);
+    await provider.populate(user.keyId, dataSourceUpdates);
 
     const flag1 = store.get(DataKinds.Flags, 'flag1');
     const flag = store.get(DataKinds.Flags, 'example-flag');

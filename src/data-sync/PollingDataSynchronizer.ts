@@ -37,9 +37,8 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
     }
 
     const startTime = Date.now();
-    const requestedUser = this.user;
     this.logger?.debug('Polling for feature flag and segments updates');
-    this.requestor.requestData(this.getStoreTimestamp(), requestedUser, (err, body) => {
+    this.requestor.requestData(this.getStoreTimestamp(), this.user, async (err, body) => {
       const elapsed = Date.now() - startTime;
       const sleepFor = Math.max(this.pollingInterval - elapsed, 0);
 
@@ -63,7 +62,7 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
         }, sleepFor);
       } else {
         let featureFlags = [];
-        let userKeyId = requestedUser?.keyId!;
+        let userKeyId = this.user?.keyId!;
         let processStreamResponse: ProcessStreamResponse | undefined = this.listeners.get('patch');
 
         if (body) {
@@ -85,20 +84,18 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
         }
 
         const data = processStreamResponse?.deserializeData?.(featureFlags);
-        const accepted = processStreamResponse?.processJson?.(userKeyId, data) ?? false;
-        if (accepted) {
-          resolve?.();
-        }
+        await processStreamResponse?.processJson?.(userKeyId, data);
+        resolve?.();
         // Falling through, there was some type of error, we need to trigger
         // a new poll.
         this.timeoutHandle = setTimeout(() => {
-          this.poll(accepted ? undefined : resolve, accepted ? undefined : reject);
+          this.poll();
         }, sleepFor);
       }
     });
   }
 
-  identify(user: IUser): Promise<void> {
+  async identify(user: IUser): Promise<void> {
     this.user = {...user};
     if (this.timeoutHandle) {
       clearTimeout(this.timeoutHandle);
@@ -126,3 +123,6 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
     this.stopped = true;
   }
 }
+
+
+

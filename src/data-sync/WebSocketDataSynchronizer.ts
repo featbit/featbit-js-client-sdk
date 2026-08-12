@@ -37,7 +37,7 @@ class WebSocketDataSynchronizer implements IDataSynchronizer {
     });
 
     this.listeners.forEach(({deserializeData, processJson}, eventName) => {
-      this.socket?.addListener(eventName, (event) => {
+      this.socket?.addListener(eventName, async (event) => {
         this.logger?.debug(`Received ${ eventName } event`);
 
         if (event?.data) {
@@ -45,11 +45,9 @@ class WebSocketDataSynchronizer implements IDataSynchronizer {
           // set origin
           const featureFlags =  event.data.featureFlags.map((ff: any) => ({...ff, origin: StoreItemOriginEnum.Remote}));
           const data = deserializeData(featureFlags);
-          const accepted = processJson(userKeyId, data);
-          if (accepted) {
-            this.identifyResolve?.();
-            this.identifyResolve = undefined;
-          }
+          await processJson(userKeyId, data);
+          this.identifyResolve?.();
+          this.identifyResolve = undefined;
         }
       });
     })
@@ -62,10 +60,10 @@ class WebSocketDataSynchronizer implements IDataSynchronizer {
     }
   }
 
-  identify(user: IUser): Promise<void> {
+  async identify(user: IUser): Promise<void> {
+    const succeeded = this.socket?.identify(user);
     return new Promise((resolve, reject) => {
       this.identifyResolve = resolve;
-      const succeeded = this.socket?.identify(user);
       if (!succeeded) {
         reject(new Error("Websocket identify failed"));
       }
