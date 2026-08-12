@@ -16,9 +16,13 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
   ) {
   }
 
-  init(userKeyId: string, newData: IStoreDataStorage): void {
-    if (userKeyId !== this.store.user.keyId) {
-      return;
+  isCurrentUser(userKeyId: string): boolean {
+    return userKeyId === this.store.user.keyId;
+  }
+
+  init(userKeyId: string, newData: IStoreDataStorage): boolean {
+    if (!this.isCurrentUser(userKeyId)) {
+      return false;
     }
 
     const checkForChanges = this.hasEventListeners();
@@ -61,6 +65,7 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
       version
     };
     doInit(oldData);
+    return true;
   }
 
   checkUpdates(oldData: IStoreDataStorage, newData: IStoreDataStorage): void {
@@ -82,9 +87,9 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
     updatedKeys.length > 0 && this.onChange(updatedKeys);
   }
 
-  upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem): void {
-    if (userKeyId !== this.store.user.keyId) {
-      return;
+  upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem): boolean {
+    if (!this.isCurrentUser(userKeyId)) {
+      return false;
     }
 
     const {key} = data;
@@ -103,6 +108,7 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
     } else {
       doUpsert();
     }
+    return true;
   }
 
   private isUpdated(oldData?: IStoreItem, newData?: IStoreItem): boolean {

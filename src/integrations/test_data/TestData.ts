@@ -41,6 +41,7 @@ export default class TestData {
       this.dataSynchronizer = new TestDataSynchronizer(
         dataSourceUpdates,
         Object.values(this.currentFlags),
+        store.user.keyId,
         () => {},
         listeners,
       );

@@ -24,8 +24,11 @@ const createPutListener = (
     };
 
     logger?.debug('Initializing all data');
-    dataSourceUpdates.init(userKeyId, initData);
-    onPutCompleteHandler?.();
+    const accepted = dataSourceUpdates.init(userKeyId, initData);
+    if (accepted) {
+      onPutCompleteHandler?.();
+    }
+    return accepted;
   },
 });
 
@@ -38,17 +41,26 @@ const createPatchListener = (
   deserializeData: deserializePatch,
   processJson: (userKeyId: string, data: IPatchData[]) => {
     if (data?.length === 0) {
-      onPatchCompleteHandler?.();
-      return;
+      const accepted = dataSourceUpdates.isCurrentUser(userKeyId);
+      if (accepted) {
+        onPatchCompleteHandler?.();
+      }
+      return accepted;
     }
 
     if (data?.length > 0) {
+      let accepted = true;
       for(const item of data) {
         logger?.debug(`Updating ${ item.data.key } in ${ item.kind.namespace }`);
-        dataSourceUpdates.upsert(userKeyId, item.kind, item.data);
+        accepted = dataSourceUpdates.upsert(userKeyId, item.kind, item.data) && accepted;
+      }
+      if (accepted) {
         onPatchCompleteHandler?.();
       }
+      return accepted;
     }
+
+    return false;
   },
 });
 

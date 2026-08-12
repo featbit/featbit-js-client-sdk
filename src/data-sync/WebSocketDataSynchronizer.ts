@@ -45,9 +45,11 @@ class WebSocketDataSynchronizer implements IDataSynchronizer {
           // set origin
           const featureFlags =  event.data.featureFlags.map((ff: any) => ({...ff, origin: StoreItemOriginEnum.Remote}));
           const data = deserializeData(featureFlags);
-          processJson(userKeyId, data);
-          this.identifyResolve?.();
-          this.identifyResolve = undefined;
+          const accepted = processJson(userKeyId, data);
+          if (accepted) {
+            this.identifyResolve?.();
+            this.identifyResolve = undefined;
+          }
         }
       });
     })
