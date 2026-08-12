@@ -41,6 +41,7 @@ export default class TestData {
       this.dataSynchronizer = new TestDataSynchronizer(
         dataSourceUpdates,
         Object.values(this.currentFlags),
+        store.user.keyId,
         () => {},
         listeners,
       );
@@ -49,7 +50,7 @@ export default class TestData {
     }
   }
 
-  update(flag: IFlag): Promise<void> {
+  update(flag: IFlag): void {
     const oldVersion = this.store.get(DataKinds.Flags, flag.id)?.version || 0;
     const newFlag = { ...flag, version: oldVersion + 1, key: flag.id };
 

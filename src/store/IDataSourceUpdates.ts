@@ -9,6 +9,11 @@ import { IStoreDataStorage, IKeyedStoreItem } from "./store";
  */
 export interface IDataSourceUpdates {
   /**
+   * Tests whether an update belongs to the current store user.
+   */
+  isCurrentUser(userKeyId: string): boolean;
+
+  /**
    * Completely overwrites the current contents of the data store with a set of items for each
    * collection.
    *
@@ -20,10 +25,10 @@ export interface IDataSourceUpdates {
    *   the value is an object that maps keys to entities. The actual type of this parameter is
    *   `interfaces.FullDataSet<VersionedData>`.
    *
-   * @param callback
-   *   Will be called when the store has been initialized.
+   * @returns
+   *   True if the update belongs to the current user and was accepted.
    */
-  init(userKeyId: string, allData: IStoreDataStorage, callback?: () => void): Promise<void>;
+  init(userKeyId: string, allData: IStoreDataStorage): boolean;
 
   /**
    * Compare old and new data, check if any update exists
@@ -38,11 +43,8 @@ export interface IDataSourceUpdates {
    *   An object in which each key is the "namespace" of a collection (e.g. `"features"`) and
    *   the value is an object that maps keys to entities. The actual type of this parameter is
    *   `interfaces.FullDataSet<VersionedData>`.
-   *
-   * @param callback
-   *   Will be called when the store has been initialized.
    */
-  checkUpdates(oldData: IStoreDataStorage, newData: IStoreDataStorage, callback?: () => void): void;
+  checkUpdates(oldData: IStoreDataStorage, newData: IStoreDataStorage): void;
 
   /**
    * Updates or inserts an item in the specified collection. For updates, the object will only be
@@ -61,8 +63,8 @@ export interface IDataSourceUpdates {
    *   existing data if the existing `version` is greater than or equal to that value.
    *   The actual type of this parameter is {@link IKeyedStoreItem}.
    *
-   * @param callback
-   *   Will be called after the upsert operation is complete.
+   * @returns
+   *   True if the update belongs to the current user and was accepted.
    */
-  upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem, callback: () => void): Promise<void>;
+  upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem): boolean;
 }

@@ -13,20 +13,20 @@ export class BaseStore implements IStore {
   constructor() {
   }
 
-  async identify(user: IUser) {
+  identify(user: IUser) {
     this._user = {...user};
 
-    await this.saveUser();
+    this.saveUser();
 
     // load version
-    await this.loadStoreFromStorage();
+    this.loadStoreFromStorage();
   }
 
   get user(): IUser {
     return this._user;
   }
 
-  protected async addItem(kind: IDataKind, key: string, item: IStoreItem) {
+  protected addItem(kind: IDataKind, key: string, item: IStoreItem) {
     let items = this.store[kind.namespace];
     if (!items) {
       items = {};
@@ -48,7 +48,7 @@ export class BaseStore implements IStore {
       this.store.version = item.version;
     }
 
-    await this.dumpStoreToStorage();
+    this.dumpStoreToStorage();
   }
 
   get(kind: IDataKind, key: string): IStoreItem | null {
@@ -76,7 +76,7 @@ export class BaseStore implements IStore {
     return [result, this.store.version];
   }
 
-  async init(allData: IStoreDataStorage) {
+  init(allData: IStoreDataStorage) {
     this.store = allData as IStoreDataStorage;
 
     Object.keys(allData).map(namespace => {
@@ -88,12 +88,12 @@ export class BaseStore implements IStore {
       })
     });
 
-    await this.dumpStoreToStorage();
+    this.dumpStoreToStorage();
     this.initCalled = true;
   }
 
-  async upsert(kind: IDataKind, data: IKeyedStoreItem) {
-    await this.addItem(kind, data.key, data);
+  upsert(kind: IDataKind, data: IKeyedStoreItem) {
+    this.addItem(kind, data.key, data);
   }
 
   initialized(): boolean {
@@ -115,14 +115,14 @@ export class BaseStore implements IStore {
   }
 
   // This method needs to be overridden in the child class
-  protected async saveUser(): Promise<void> {
+  protected saveUser(): void {
   }
 
   // This method needs to be overridden in the child class
-  protected async loadStoreFromStorage(): Promise<void> {
+  protected loadStoreFromStorage(): void {
   }
 
   // This method needs to be overridden in the child class
-  protected async dumpStoreToStorage(): Promise<void> {
+  protected dumpStoreToStorage(): void {
   }
 }
