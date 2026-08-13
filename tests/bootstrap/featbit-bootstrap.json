@@ -3,6 +3,7 @@
     "id": "flag1",
     "variationType": "boolean",
     "variation": "true",
+    "matchReason": "target match",
     "variationOptions": [
       {
         "id": "94091e92-5d7e-4da3-9732-87424838b070",

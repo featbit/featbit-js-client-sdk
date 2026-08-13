@@ -61,7 +61,7 @@ describe('given a FbClientNode', () => {
 
   beforeEach(() => {
     testLogger = new TestLogger();
-    clientUser = new UserBuilder(userKeyId).build();
+    clientUser = new UserBuilder(userKeyId).name(userKeyId).build();
   });
 
   it('the fbClient initialized successfully', async () => {
