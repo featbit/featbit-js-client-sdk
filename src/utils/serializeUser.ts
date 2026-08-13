@@ -1,4 +1,5 @@
 import { IUser } from "../options/IUser";
+import { sha256 } from "js-sha256";
 
 export function serializeUser(user: IUser | undefined): string {
   if (!user) {
@@ -36,12 +37,5 @@ export async function hashSerializeUser(
     return '';
   }
 
-  const encoder = new TextEncoder();
-  const data = encoder.encode(serialized);
-
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-
-  return Array.from(new Uint8Array(hashBuffer))
-  .map(b => b.toString(16).padStart(2, '0'))
-  .join('');
+  return sha256(serialized);
 }

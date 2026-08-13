@@ -1,6 +1,6 @@
 {
   "name": "@featbit/js-client-sdk",
-  "version": "4.3.2",
+  "version": "4.3.3",
   "description": "https://github.com/featbit/featbit-js-client-sdk",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -50,5 +50,8 @@
     "typescript": "^5.2.2",
     "webpack": "^5.91.0",
     "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "js-sha256": "^1.0.0"
   }
 }
