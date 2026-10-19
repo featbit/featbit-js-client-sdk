@@ -17,11 +17,11 @@ export interface IFbClient extends IFbClientCore, IEventEmitter {
    * Alternately, you can detect this with [[waitForInitialization]].
    * - `"error"`: Contains an error object describing some abnormal condition that the client has detected
    * (such as a network error).
-   * - `"update"`: The client has received a change to a feature flag. The event parameter is an object
-   * containing a single property, `key`, the flag key. Note that this does not necessarily mean the flag's
+   * - `"update"`: The client has received changes to feature flags. The event parameter is a flat array
+   * of changed flag keys (`string[]`). Note that this does not necessarily mean a flag's
    * value has changed for any particular context, only that some part of the flag configuration was changed.
-   * - `"update:KEY"`: The client has received a change to the feature flag whose key is KEY. This is the
-   * same as `"update"` but allows you to listen for a specific flag.
+   * - `"update:KEY"`: The client has received a change to the feature flag whose key is KEY. The event
+   * parameter is that flag's key (`string`). This allows you to listen for a specific flag.
    *
    * @param event the name of the event to listen for
    * @param listener the function to call when the event happens
