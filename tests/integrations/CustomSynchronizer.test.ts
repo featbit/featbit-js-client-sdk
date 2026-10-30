@@ -4,6 +4,9 @@ import TestData from '../../src/integrations/test_data/TestData';
 import InMemoryStore from '../../src/store/InMemoryStore';
 import { IFlag, VariationDataType } from '../../src/evaluation/data/IFlag';
 import { IDataSynchronizer } from '../../src/data-sync/IDataSynchronizer';
+import { FlagBuilder } from '../../src/integrations/test_data/FlagBuilder';
+import { StoreItemOriginEnum } from '../../src/store/store';
+import DataKinds from '../../src/store/DataKinds';
 
 const user = (keyId: string) => ({ keyId, name: keyId });
 const logger = { warn: jest.fn(), error: jest.fn(), info: jest.fn(), debug: jest.fn() };
@@ -15,7 +18,73 @@ describe('custom synchronizer Identify lifecycle', () => {
   beforeEach(() => jest.useFakeTimers());
   afterEach(async () => {
     await client?.close();
+    jest.restoreAllMocks();
     jest.useRealTimers();
+  });
+
+  it.each(['startup', 'Identify'])('reports the actual async store error during %s', async phase => {
+    const data = new TestData();
+    const store = new InMemoryStore();
+    const failure = new Error('store init failed');
+    const failInit = () => jest.spyOn(store, 'init').mockRejectedValue(failure);
+    if (phase === 'startup') failInit();
+    client = new FbClientBuilder({ sdkKey: 'key', user: user('A'), store,
+      dataSynchronizer: data.getFactory(), disableEvents: true, startWaitTime: 100, logger }).build();
+    const error = jest.fn();
+    const failed = jest.fn();
+    client.on('error', error);
+    client.on('failed', failed);
+    let identifying: Promise<void> | undefined;
+    if (phase === 'Identify') {
+      await client.waitForInitialization();
+      failInit();
+      identifying = client.identify(user('B'));
+    }
+    await expect(client.waitForInitialization()).rejects.toBe(failure);
+    await identifying;
+    expect(client.initialized()).toBe(false);
+    expect(error).toHaveBeenCalledWith(failure);
+    expect(failed).toHaveBeenCalledTimes(1);
+    await jest.advanceTimersByTimeAsync(200);
+    await expect(client.waitForInitialization()).rejects.toBe(failure);
+  });
+
+  it('ignores a stopped TestData startup failure while completing the new context', async () => {
+    let rejectStart!: (error: Error) => void;
+    const store = new InMemoryStore();
+    jest.spyOn(store, 'init').mockImplementationOnce(() =>
+      new Promise<void>((_resolve, reject) => { rejectStart = reject; }));
+    const data = new TestData();
+    client = new FbClientBuilder({ sdkKey: 'key', user: user('A'), store,
+      disableEvents: true, logger, dataSynchronizer: data.getFactory() }).build();
+    const failed = jest.fn();
+    client.on('failed', failed);
+    await flush();
+    const identifying = client.identify(user('B'));
+    rejectStart(new Error('old startup failed'));
+    await identifying;
+    await client.waitForInitialization();
+    await flush();
+    expect(client.initialized()).toBe(true);
+    expect(failed).not.toHaveBeenCalled();
+  });
+
+  it('preserves FlagBuilder choices and remote evaluations across Identify', async () => {
+    const data = new TestData();
+    const store = new InMemoryStore();
+    client = new FbClientBuilder({ sdkKey: 'key', user: user('A'), store,
+      dataSynchronizer: data.getFactory(), disableEvents: true, logger }).build();
+    await client.waitForInitialization();
+    const choices = [{ id: 1, value: 'yes' }, { id: 2, value: 'no' }];
+    await data.update(new FlagBuilder().id('flag').key('flag').origin(StoreItemOriginEnum.Remote)
+      .variationType(VariationDataType.string).variation('yes').variations(choices).build());
+    expect(client.stringVariation('flag', 'fallback')).toBe('yes');
+    for (const key of ['A', 'B', 'A']) {
+      await client.identify(user(key));
+      await client.waitForInitialization();
+      expect(store.get(DataKinds.Flags, 'flag')?.variations).toEqual(choices);
+      expect(client.stringVariation('flag', 'fallback')).toBe('yes');
+    }
   });
 
   it.each(['test-user-key-id', 'application-user'])('restores TestData readiness and flags for %s and a different user', async key => {

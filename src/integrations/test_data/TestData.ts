@@ -26,7 +26,7 @@ export default class TestData {
       store: IStore,
       dataSourceUpdates: IDataSourceUpdates,
       initSuccessHandler: VoidFunction,
-      _errorHandler?: (e: Error) => void,
+      errorHandler?: (e: Error) => void,
     ) => {
       this.store = store;
 
@@ -44,6 +44,7 @@ export default class TestData {
         () => {},
         listeners,
         store.user.keyId,
+        errorHandler,
       );
 
       return this.dataSynchronizer;

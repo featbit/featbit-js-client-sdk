@@ -18,18 +18,23 @@ export default class TestDataSynchronizer implements IDataSynchronizer {
     private readonly onStop: VoidFunction,
     private readonly listeners: Map<EventName, ProcessStreamResponse>,
     private userKeyId: string,
+    private readonly errorHandler?: (error: Error) => void,
   ) {
     // make copies of these objects to decouple them from the originals
     // so updates made to the originals don't affect these internal data.
     this.flags = [...initialFlags];
   }
 
-  async start() {
+  start(): void {
     this.stopped = false;
     const generation = ++this.generation;
     const isCurrent = () => !this.stopped && generation === this.generation;
     const listener = this.listeners.get('put')!;
-    await listener.processJson(this.userKeyId, listener.deserializeData(this.flags), isCurrent);
+    // Follow the synchronous start contract and report asynchronous work through
+    // the existing completion/error callbacks, just like the network sources.
+    listener.processJson(this.userKeyId, listener.deserializeData(this.flags), isCurrent).catch(error => {
+      if (isCurrent()) this.errorHandler?.(error);
+    });
   }
 
   async identify(user: IUser): Promise<void> {
@@ -47,7 +52,10 @@ export default class TestDataSynchronizer implements IDataSynchronizer {
   }
 
   async upsert(kind: IDataKind, value: IKeyedStoreItem) {
-    const flag = { ...value, id: value.key, timestamp: value.version } as IFlag;
+    const flag = {
+      ...value, id: value.key, timestamp: value.version,
+      variationOptions: value.variations ?? value.variationOptions
+    } as IFlag;
     const index = this.flags.findIndex(item => item.id === flag.id);
     if (index === -1) this.flags.push(flag);
     else this.flags[index] = flag;
