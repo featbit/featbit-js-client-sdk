@@ -71,6 +71,7 @@ export class FbClientCore implements IFbClientCore {
   private initReject?: (err: Error) => void;
 
   private rejectionReason: Error | undefined;
+  private reportedSourceError?: { generation: number; error: unknown };
 
   private initializedPromise?: Promise<IFbClientCore>;
 
@@ -256,7 +257,10 @@ export class FbClientCore implements IFbClientCore {
     } catch (error) {
       if (isCurrent()) {
         this.contextChanging = false;
-        this.dataSourceErrorHandler(error);
+        // Polling may report the error through its callback before rejecting Identify.
+        if (this.reportedSourceError?.generation !== generation || this.reportedSourceError.error !== error) {
+          this.dataSourceErrorHandler(error);
+        }
       }
     }
   }
@@ -498,6 +502,7 @@ export class FbClientCore implements IFbClientCore {
 
   private dataSourceErrorHandler(e: any) {
     if (this.closed || this.contextChanging) return;
+    this.reportedSourceError = { generation: this.contextGeneration, error: e };
     const error =
       e.code === 401 ? new Error('Authentication failed. Double check your SDK key.') : e;
 

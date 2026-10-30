@@ -22,6 +22,26 @@ describe('custom synchronizer Identify lifecycle', () => {
     jest.useRealTimers();
   });
 
+  it.each([true, false])('deduplicates only the same original Identify error (same error: %s)', async sameError => {
+    const first = Object.assign(new Error('first'), { code: 401 });
+    const second = sameError ? first : new Error('second');
+    client = new FbClientBuilder({ sdkKey: 'key', user: user('A'), store: new InMemoryStore(),
+      disableEvents: true, logger,
+      dataSynchronizer: (_context, _store, _updates, ready, reportError) => ({
+        start: ready, stop() {}, close() {},
+        identify: async () => { reportError!(first); throw second; }
+      })
+    }).build();
+    await client.waitForInitialization();
+    const failed = jest.fn();
+    client.on('failed', failed);
+    const identifying = client.identify(user('B'));
+    await expect(client.waitForInitialization()).rejects.toThrow('Authentication failed');
+    await identifying;
+    expect(failed).toHaveBeenCalledTimes(sameError ? 1 : 2);
+    if (!sameError) expect(failed).toHaveBeenLastCalledWith(second);
+  });
+
   it.each(['startup', 'Identify'])('reports the actual async store error during %s', async phase => {
     const data = new TestData();
     const store = new InMemoryStore();

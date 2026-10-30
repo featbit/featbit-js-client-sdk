@@ -1,6 +1,7 @@
 import { FbClientBuilder } from '../../../src/FbClientBuilder';
 import InMemoryStore from '../../../src/store/InMemoryStore';
 import { IFbClient } from '../../../src/IFbClient';
+import { DataSyncModeEnum } from '../../../src/data-sync/DataSyncMode';
 
 class TestSocket {
   static OPEN = 1;
@@ -55,6 +56,34 @@ describe('browser context isolation', () => {
     await client.waitForInitialization();
     return socket;
   }
+
+  it.each([401, 403])('reports a polling Identify HTTP %s failure once per context', async status => {
+    await client.close();
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValueOnce({ status: 200, text: async () => JSON.stringify({
+      messageType: 'data-sync', data: { userKeyId: 'same-key', eventType: 'full', featureFlags: [] }
+    }) }).mockResolvedValue({ status, text: async () => '' });
+    try {
+      client = new FbClientBuilder({ store: new InMemoryStore(), dataSyncMode: DataSyncModeEnum.POLLING })
+        .sdkKey('key').user(user('A')).pollingUri('http://example.test')
+        .disableEvents(true).logger(logger).build();
+      await client.waitForInitialization();
+      const error = jest.fn();
+      const failed = jest.fn();
+      client.on('error', error);
+      client.on('failed', failed);
+      for (const [index, plan] of ['B', 'C'].entries()) {
+        const identifying = client.identify(user(plan));
+        await expect(client.waitForInitialization()).rejects.toBeInstanceOf(Error);
+        await identifying;
+        expect(client.initialized()).toBe(false);
+        expect(error).toHaveBeenCalledTimes(index + 1);
+        expect(failed).toHaveBeenCalledTimes(index + 1);
+      }
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
 
   it('finishes initialization and Identify even when update listeners throw', async () => {
     client.on('update', () => { throw new Error('application update listener'); });
