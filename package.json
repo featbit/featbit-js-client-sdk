@@ -27,7 +27,7 @@
     "build": "rimraf dist && rimraf examples/web-app/umd && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && node scripts/write-module-types.cjs && webpack --mode production",
     "test": "npx jest --ci",
     "test-coverage": "npx jest --ci --coverage",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run build && npm run test:package",
     "test:package": "node scripts/test-package.cjs"
   },
   "repository": {
