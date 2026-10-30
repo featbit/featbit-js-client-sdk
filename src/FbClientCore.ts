@@ -467,7 +467,7 @@ export class FbClientCore implements IFbClientCore {
     } else {
       // send event
       const flag = this.store?.get(DataKinds.Flags, flagKey);
-      if (flag?.origin === StoreItemOriginEnum.Remote) {
+      if (flag?.origin === StoreItemOriginEnum.Remote && flag.insightsEnabled !== false) {
         this.eventProcessor!.record(evalResult.toEvalEvent(this.config.user));
       }
     }
