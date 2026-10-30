@@ -119,13 +119,15 @@ class WebSocketDataSynchronizer implements IDataSynchronizer {
 
   private watchResume(): void {
     this.removeResumeListener?.();
-    this.removeResumeListener = onPageResume(() => {
-      if (!this.stopped && this.fullSync.due && Date.now() - this.lastRefreshAttempt >= 30000) {
+    this.removeResumeListener = onPageResume(reason => {
+      // Initial pageshow must not replace a connection just started by startup/Identify.
+      // Actual foreground/network recovery must not wait for the full-sync deadline or backoff.
+      if (!this.stopped && (reason !== 'pageshow' || Date.now() - this.lastRefreshAttempt >= 30000)) {
         this.lastRefreshAttempt = Date.now();
         this.socket.connect();
         this.scheduleRefresh();
       }
-    });
+    }, true);
   }
 
   private scheduleRefresh(): void {

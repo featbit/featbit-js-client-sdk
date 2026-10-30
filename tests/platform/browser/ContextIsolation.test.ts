@@ -189,6 +189,63 @@ describe('browser context isolation', () => {
     expect(client.variation('flag', 'fallback')).toBe('B');
   });
 
+  it.each(['visibilitychange', 'pageshow', 'online'])('resyncs immediately on %s before full sync is due', async eventName => {
+    const initial = await initialize();
+    if (eventName === 'visibilitychange') {
+      const visibility = jest.spyOn(document, 'visibilityState', 'get');
+      visibility.mockReturnValue('hidden');
+      document.dispatchEvent(new Event('visibilitychange'));
+      expect(initial.readyState).toBe(TestSocket.OPEN);
+      visibility.mockReturnValue('visible');
+      document.dispatchEvent(new Event('visibilitychange'));
+    } else if (eventName === 'pageshow') {
+      window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+    } else {
+      window.dispatchEvent(new Event('online'));
+    }
+    // No timer or full-sync deadline needs to elapse, even for a brief interruption.
+    expect(TestSocket.instances).toHaveLength(2);
+    const resumed = TestSocket.instances[1];
+    expect(initial.readyState).toBe(3);
+    resumed.open();
+    expect(resumed.sent[0].data.timestamp).toBe(1);
+    initial.full('stale');
+    await flush();
+    expect(client.variation('flag', 'fallback')).toBe('A');
+    resumed.full('resumed');
+    await flush();
+    expect(client.variation('flag', 'fallback')).toBe('resumed');
+
+    await client.close();
+    window.dispatchEvent(new Event('online'));
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+    const visibility = jest.spyOn(document, 'visibilityState', 'get');
+    visibility.mockReturnValue('hidden');
+    document.dispatchEvent(new Event('visibilitychange'));
+    visibility.mockReturnValue('visible');
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(TestSocket.instances).toHaveLength(2);
+    expect(jest.getTimerCount()).toBe(0);
+  });
+
+  it('bypasses reconnect backoff when the network recovers and cancels the old retry', async () => {
+    const initial = await initialize();
+    initial.close(1006);
+    await jest.advanceTimersByTimeAsync(1000);
+    const failed = TestSocket.instances[1];
+    failed.close(1006); // The next automatic attempt would wait three seconds.
+    window.dispatchEvent(new Event('online'));
+    expect(TestSocket.instances).toHaveLength(3);
+    const recovered = TestSocket.instances[2];
+    recovered.open();
+    expect(recovered.sent[0].data.timestamp).toBe(1);
+    recovered.full('online');
+    await flush();
+    await jest.advanceTimersByTimeAsync(3000);
+    expect(TestSocket.instances).toHaveLength(3);
+    expect(client.variation('flag', 'fallback')).toBe('online');
+  });
+
   it('requests full on startup/Identify, uses incremental reconnects, and refreshes after sleep', async () => {
     await client.close();
     const store = new InMemoryStore();
