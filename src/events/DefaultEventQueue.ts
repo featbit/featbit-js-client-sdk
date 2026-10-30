@@ -1,6 +1,6 @@
-import { IEventQueue } from "./IEventQueue";
-import { IEvent } from "./event";
-import { ILogger } from "../logging/ILogger";
+import { IEventQueue } from "./IEventQueue.js";
+import { IEvent } from "./event.js";
+import { ILogger } from "../logging/ILogger.js";
 
 export class DefaultEventQueue implements IEventQueue {
   private events: IEvent[];

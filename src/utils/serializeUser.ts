@@ -1,4 +1,4 @@
-import { IUser } from "../options/IUser";
+import { IUser } from "../options/IUser.js";
 import { sha256 } from "js-sha256";
 
 export function serializeUser(user: IUser | undefined): string {

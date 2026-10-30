@@ -1,5 +1,5 @@
-import { IInfo, IPlatformData, ISdkData } from "../IInfo";
-import { name, version } from '../../version';
+import { IInfo, IPlatformData, ISdkData } from "../IInfo.js";
+import { name, version } from '../../version.js';
 
 
 export default class BrowserInfo implements IInfo {

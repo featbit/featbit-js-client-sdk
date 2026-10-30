@@ -1,8 +1,8 @@
-import { IFlag } from "./data/IFlag";
-import EvalResult from "./EvalResult";
-import { IStore } from "../platform/IStore";
-import DataKinds from "../store/DataKinds";
-import { ILogger } from "../logging";
+import { IFlag } from "./data/IFlag.js";
+import EvalResult from "./EvalResult.js";
+import { IStore } from "../platform/IStore.js";
+import DataKinds from "../store/DataKinds.js";
+import { ILogger } from "../logging/index.js";
 
 /**
  * @internal

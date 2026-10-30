@@ -1,7 +1,7 @@
-import { StoreStorageKey } from './store';
-import { BaseStore } from './BaseStore';
-import { hashSerializeUser } from '../utils';
-import { UserCache, UserCacheOptions } from './UserCache';
+import { StoreStorageKey } from './store.js';
+import { BaseStore } from './BaseStore.js';
+import { hashSerializeUser } from '../utils/index.js';
+import { UserCache, UserCacheOptions } from './UserCache.js';
 
 export default class InMemoryStore extends BaseStore {
   private readonly cache: UserCache;

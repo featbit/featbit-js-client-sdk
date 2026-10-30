@@ -1,10 +1,10 @@
-import { ILogger } from "../logging/ILogger";
-import { IStore } from "../platform/IStore";
-import { IOptions } from "./IOptions";
-import { IDataSynchronizer } from "../data-sync/IDataSynchronizer";
-import { DataSyncModeEnum } from "../data-sync/DataSyncMode";
-import { IUser } from "./IUser";
-import { IFlagBase } from "../evaluation";
+import { ILogger } from "../logging/ILogger.js";
+import { IStore } from "../platform/IStore.js";
+import { IOptions } from "./IOptions.js";
+import { IDataSynchronizer } from "../data-sync/IDataSynchronizer.js";
+import { DataSyncModeEnum } from "../data-sync/DataSyncMode.js";
+import { IUser } from "./IUser.js";
+import { IFlagBase } from "../evaluation/index.js";
 
 export interface IValidatedOptions {
   fullSyncInterval: number;

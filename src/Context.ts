@@ -1,4 +1,4 @@
-import { IUser } from "./options/IUser";
+import { IUser } from "./options/IUser.js";
 
 export default class Context {
   private _user?: IUser;

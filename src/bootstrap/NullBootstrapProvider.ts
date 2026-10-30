@@ -1,6 +1,6 @@
-import { IBootstrapProvider } from "./IBootstrapProvider";
-import { IDataSourceUpdates } from "../store/IDataSourceUpdates";
-import { IStoreDataStorage } from "../store/store";
+import { IBootstrapProvider } from "./IBootstrapProvider.js";
+import { IDataSourceUpdates } from "../store/IDataSourceUpdates.js";
+import { IStoreDataStorage } from "../store/store.js";
 
 export class NullBootstrapProvider implements IBootstrapProvider {
   private dataSet?: IStoreDataStorage;

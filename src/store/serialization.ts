@@ -1,7 +1,7 @@
-import { IFlag } from "../evaluation/data/IFlag";
-import DataKinds from "./DataKinds";
-import { IVersionedData } from "../IVersionedData";
-import { IDataKind } from "../IDataKind";
+import { IFlag } from "../evaluation/data/IFlag.js";
+import DataKinds from "./DataKinds.js";
+import { IVersionedData } from "../IVersionedData.js";
+import { IDataKind } from "../IDataKind.js";
 
 export interface Flags {
   flags: { [name: string]: IFlag };

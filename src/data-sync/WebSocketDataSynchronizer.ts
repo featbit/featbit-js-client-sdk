@@ -1,13 +1,13 @@
-import { IDataSynchronizer } from "./IDataSynchronizer";
-import ClientContext from "../options/ClientContext";
-import { EventName, ProcessStreamResponse } from "./types";
-import { ILogger } from "../logging/ILogger";
-import { IWebSocketWithEvents } from "../platform/IWebSocket";
-import { IUser } from "../options/IUser";
-import { StoreItemOriginEnum } from "../store";
-import { onPageResume } from '../utils/onPageResume';
-import FullSyncPolicy from './FullSyncPolicy';
-import { copyUser } from '../utils/copyUser';
+import { IDataSynchronizer } from "./IDataSynchronizer.js";
+import ClientContext from "../options/ClientContext.js";
+import { EventName, ProcessStreamResponse } from "./types.js";
+import { ILogger } from "../logging/ILogger.js";
+import { IWebSocketWithEvents } from "../platform/IWebSocket.js";
+import { IUser } from "../options/IUser.js";
+import { StoreItemOriginEnum } from "../store/index.js";
+import { onPageResume } from '../utils/onPageResume.js';
+import FullSyncPolicy from './FullSyncPolicy.js';
+import { copyUser } from '../utils/copyUser.js';
 
 class WebSocketDataSynchronizer implements IDataSynchronizer {
   private removeResumeListener?: () => void;

@@ -1,4 +1,4 @@
-import { TypeValidators } from "../options/Validators";
+import { TypeValidators } from "../options/Validators.js";
 
 
 /**

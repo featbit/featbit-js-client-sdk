@@ -1,6 +1,6 @@
-import { IRequests } from "./requests";
-import { IInfo } from "./IInfo";
-import { IWebSocketWithEvents } from "./IWebSocket";
+import { IRequests } from "./requests.js";
+import { IInfo } from "./IInfo.js";
+import { IWebSocketWithEvents } from "./IWebSocket.js";
 
 export interface IPlatform {
   /**

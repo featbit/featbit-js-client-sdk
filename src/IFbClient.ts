@@ -1,5 +1,5 @@
-import { IFbClientCore } from "./IFbClientCore";
-import { IEventEmitter } from "./utils/IEventEmitter";
+import { IFbClientCore } from "./IFbClientCore.js";
+import { IEventEmitter } from "./utils/IEventEmitter.js";
 
 export interface IFbClient extends IFbClientCore, IEventEmitter {
   /**

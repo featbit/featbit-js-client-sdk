@@ -1,11 +1,11 @@
-import { IWebSocket, IWebSocketConfig } from '../IWebSocket';
-import { Emits } from '../../utils/Emits';
-import { IEventEmitter } from '../../utils/IEventEmitter';
-import { EventEmitter } from '../../utils/EventEmitter';
-import { generateConnectionToken } from '../../data-sync/utils';
-import { StreamResponseEventType } from '../../data-sync/types';
-import { IUser } from '../../options/IUser';
-import { copyUser } from '../../utils/copyUser';
+import { IWebSocket, IWebSocketConfig } from '../IWebSocket.js';
+import { Emits } from '../../utils/Emits.js';
+import { IEventEmitter } from '../../utils/IEventEmitter.js';
+import { EventEmitter } from '../../utils/EventEmitter.js';
+import { generateConnectionToken } from '../../data-sync/utils.js';
+import { StreamResponseEventType } from '../../data-sync/types.js';
+import { IUser } from '../../options/IUser.js';
+import { copyUser } from '../../utils/copyUser.js';
 
 const socketConnectionIntervals = [1000, 3000, 5000, 7000, 11000, 13000, 30000, 60000];
 

@@ -1,3 +1,3 @@
-export * from './IBootstrapProvider';
-export * from './JsonBootstrapProvider';
-export * from './NullBootstrapProvider';
+export * from './IBootstrapProvider.js';
+export * from './JsonBootstrapProvider.js';
+export * from './NullBootstrapProvider.js';

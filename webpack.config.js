@@ -27,6 +27,7 @@ const baseConfig = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
+    extensionAlias: { '.js': ['.ts', '.js'] },
   },
   output: {
     path: path.resolve(__dirname, 'dist', 'umd'),

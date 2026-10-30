@@ -1,5 +1,5 @@
-import { IEventProcessor } from "./IEventProcessor";
-import { IEvent } from "./event";
+import { IEventProcessor } from "./IEventProcessor.js";
+import { IEvent } from "./event.js";
 
 export class NullEventProcessor implements IEventProcessor {
   flush(): Promise<void> {

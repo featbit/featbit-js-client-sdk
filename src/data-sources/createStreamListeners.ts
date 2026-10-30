@@ -1,14 +1,14 @@
-import { IDataSourceUpdates } from "../store/IDataSourceUpdates";
-import { ILogger } from "../logging/ILogger";
-import { VoidFunction } from "../utils/VoidFunction";
+import { IDataSourceUpdates } from "../store/IDataSourceUpdates.js";
+import { ILogger } from "../logging/ILogger.js";
+import { VoidFunction } from "../utils/VoidFunction.js";
 import {
   deserializeAll,
   deserializePatch,
   IPatchData,
   Flags
-} from "../store/serialization";
-import { IStoreDataStorage } from "../store/store";
-import { EventName, ProcessStreamResponse } from "../data-sync/types";
+} from "../store/serialization.js";
+import { IStoreDataStorage } from "../store/store.js";
+import { EventName, ProcessStreamResponse } from "../data-sync/types.js";
 
 const createPutListener = (
   dataSourceUpdates: IDataSourceUpdates,

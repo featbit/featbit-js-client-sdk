@@ -1,6 +1,6 @@
-import { IEventEmitter } from "../utils/IEventEmitter";
-import { ILogger } from "../logging/ILogger";
-import { IUser } from "../options/IUser";
+import { IEventEmitter } from "../utils/IEventEmitter.js";
+import { ILogger } from "../logging/ILogger.js";
+import { IUser } from "../options/IUser.js";
 
 export interface IWebSocketConfig {
   sdkKey: string;

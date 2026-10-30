@@ -1,6 +1,6 @@
-import { IDataKind } from "../IDataKind";
-import { IKeyedStoreItem, IStoreDataStorage, IStoreItem, IStoreKindData, IStoreUpdate } from "../store/store";
-import { IUser } from "../options/IUser";
+import { IDataKind } from "../IDataKind.js";
+import { IKeyedStoreItem, IStoreDataStorage, IStoreItem, IStoreKindData, IStoreUpdate } from "../store/store.js";
+import { IUser } from "../options/IUser.js";
 
 /**
  * Interface for a feature store component.

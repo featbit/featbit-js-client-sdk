@@ -1,2 +1,2 @@
-export * from './test_data';
-export { TestLogger } from './TestLogger';
+export * from './test_data/index.js';
+export { TestLogger } from './TestLogger.js';

@@ -1,11 +1,11 @@
-import { IDataSynchronizer } from "../../data-sync/IDataSynchronizer";
-import { IFlag } from "../../evaluation/data/IFlag";
-import { EventName, ProcessStreamResponse } from "../../data-sync/types";
-import { IDataSourceUpdates } from "../../store/IDataSourceUpdates";
-import { VoidFunction } from "../../utils/VoidFunction";
-import { IDataKind } from "../../IDataKind";
-import { IKeyedStoreItem } from "../../store/store";
-import { IUser } from '../../options/IUser';
+import { IDataSynchronizer } from "../../data-sync/IDataSynchronizer.js";
+import { IFlag } from "../../evaluation/data/IFlag.js";
+import { EventName, ProcessStreamResponse } from "../../data-sync/types.js";
+import { IDataSourceUpdates } from "../../store/IDataSourceUpdates.js";
+import { VoidFunction } from "../../utils/VoidFunction.js";
+import { IDataKind } from "../../IDataKind.js";
+import { IKeyedStoreItem } from "../../store/store.js";
+import { IUser } from '../../options/IUser.js';
 
 export default class TestDataSynchronizer implements IDataSynchronizer {
   private readonly flags: IFlag[];

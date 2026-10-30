@@ -7,8 +7,14 @@
   "types": "./dist/esm/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
       "default": "./dist/esm/index.js"
     }
   },
@@ -18,10 +24,11 @@
   ],
   "scripts": {
     "prebuild": "node -p \"'export const version = \\\"' + require('./package.json').version + '\\\"; export const name = \\\"' + require('./package.json').name + '\\\";'\" > src/version.ts",
-    "build": "rimraf dist && rimraf examples/web-app/umd && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && webpack --mode production",
+    "build": "rimraf dist && rimraf examples/web-app/umd && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && node scripts/write-module-types.cjs && webpack --mode production",
     "test": "npx jest --ci",
     "test-coverage": "npx jest --ci --coverage",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build && npm run test:package",
+    "test:package": "node scripts/test-package.cjs"
   },
   "repository": {
     "type": "git",

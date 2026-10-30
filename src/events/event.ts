@@ -1,5 +1,5 @@
-import { IUser } from "../options/IUser";
-import { IVariation } from "../evaluation/data/IFlag";
+import { IUser } from "../options/IUser.js";
+import { IVariation } from "../evaluation/data/IFlag.js";
 
 export interface IEvent {
   hash: string;

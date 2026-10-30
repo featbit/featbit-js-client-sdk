@@ -1,7 +1,7 @@
-import { ILogger } from "../logging/ILogger";
-import { IPlatform } from "../platform/IPlatform";
-import { IClientContext } from "./IClientContext";
-import { IUser } from "./IUser";
+import { ILogger } from "../logging/ILogger.js";
+import { IPlatform } from "../platform/IPlatform.js";
+import { IClientContext } from "./IClientContext.js";
+import { IUser } from "./IUser.js";
 
 /**
  * The client context provides basic configuration and platform support which are required

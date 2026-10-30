@@ -1,14 +1,14 @@
-import { FbClientCore } from "../../FbClientCore";
-import { IOptions } from "../../options/IOptions";
-import { BasicLogger } from "../../logging/BasicLogger";
-import { EventEmitter } from "../../utils/EventEmitter";
-import { SafeLogger } from "../../logging/SafeLogger";
-import { Emits } from "../../utils/Emits";
-import { IEventEmitter } from "../../utils/IEventEmitter";
-import { BrowserPlatform } from "./BrowserPlatform";
-import LocalStorageStore from "./LocalStorageStore";
-import { IPlatform } from "../IPlatform";
-import { ILogger } from "../../logging";
+import { FbClientCore } from "../../FbClientCore.js";
+import { IOptions } from "../../options/IOptions.js";
+import { BasicLogger } from "../../logging/BasicLogger.js";
+import { EventEmitter } from "../../utils/EventEmitter.js";
+import { SafeLogger } from "../../logging/SafeLogger.js";
+import { Emits } from "../../utils/Emits.js";
+import { IEventEmitter } from "../../utils/IEventEmitter.js";
+import { BrowserPlatform } from "./BrowserPlatform.js";
+import LocalStorageStore from "./LocalStorageStore.js";
+import { IPlatform } from "../IPlatform.js";
+import { ILogger } from "../../logging/index.js";
 
 /**
  * @ignore

@@ -1,4 +1,4 @@
-import { StoreItemOriginEnum } from "../../store";
+import { StoreItemOriginEnum } from "../../store/index.js";
 
 export type FlagValue = any;
 

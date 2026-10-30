@@ -1,7 +1,7 @@
-import { ReasonKinds } from "./ReasonKinds";
-import { IFlag } from "./data/IFlag";
-import { EvalEvent } from "../events/event";
-import { IUser } from "../options/IUser";
+import { ReasonKinds } from "./ReasonKinds.js";
+import { IFlag } from "./data/IFlag.js";
+import { EvalEvent } from "../events/event.js";
+import { IUser } from "../options/IUser.js";
 
 /**
  * A class which encapsulates the result of an evaluation. It allows for differentiating between

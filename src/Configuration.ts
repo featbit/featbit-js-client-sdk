@@ -1,24 +1,24 @@
-import { IOptions } from "./options/IOptions";
-import { ILogger } from "./logging/ILogger";
-import { IValidatedOptions } from "./options/IValidatedOptions";
-import { NumberWithMinimum, TypeValidator, TypeValidators, UserValidator } from "./options/Validators";
-import OptionMessages from "./options/OptionMessages";
-import { IStore } from "./platform/IStore";
-import { IClientContext } from "./options/IClientContext";
-import { IDataSynchronizer } from "./data-sync/IDataSynchronizer";
-import { IDataSourceUpdates } from "./store/IDataSourceUpdates";
-import InMemoryStore from "./store/InMemoryStore";
-import { VoidFunction } from "./utils/VoidFunction";
-import { isNullOrUndefined } from "./utils/isNullOrUndefined";
-import { canonicalizeUri } from "./utils/canonicalizeUri";
-import { IBootstrapProvider } from "./bootstrap/IBootstrapProvider";
-import { NullBootstrapProvider } from "./bootstrap/NullBootstrapProvider";
-import { EmptyString } from "./constants";
-import { DataSyncModeEnum } from "./data-sync/DataSyncMode";
-import { IUser } from "./options/IUser";
-import { JsonBootstrapProvider } from "./bootstrap";
-import { defaultFullSyncInterval } from './data-sync/FullSyncPolicy';
-import { defaultMaxCachedUsers, defaultUserCacheTtl, isPositiveInteger } from './store/UserCache';
+import { IOptions } from "./options/IOptions.js";
+import { ILogger } from "./logging/ILogger.js";
+import { IValidatedOptions } from "./options/IValidatedOptions.js";
+import { NumberWithMinimum, TypeValidator, TypeValidators, UserValidator } from "./options/Validators.js";
+import OptionMessages from "./options/OptionMessages.js";
+import { IStore } from "./platform/IStore.js";
+import { IClientContext } from "./options/IClientContext.js";
+import { IDataSynchronizer } from "./data-sync/IDataSynchronizer.js";
+import { IDataSourceUpdates } from "./store/IDataSourceUpdates.js";
+import InMemoryStore from "./store/InMemoryStore.js";
+import { VoidFunction } from "./utils/VoidFunction.js";
+import { isNullOrUndefined } from "./utils/isNullOrUndefined.js";
+import { canonicalizeUri } from "./utils/canonicalizeUri.js";
+import { IBootstrapProvider } from "./bootstrap/IBootstrapProvider.js";
+import { NullBootstrapProvider } from "./bootstrap/NullBootstrapProvider.js";
+import { EmptyString } from "./constants.js";
+import { DataSyncModeEnum } from "./data-sync/DataSyncMode.js";
+import { IUser } from "./options/IUser.js";
+import { JsonBootstrapProvider } from "./bootstrap/index.js";
+import { defaultFullSyncInterval } from './data-sync/FullSyncPolicy.js';
+import { defaultMaxCachedUsers, defaultUserCacheTtl, isPositiveInteger } from './store/UserCache.js';
 
 // Once things are internal to the implementation of the SDK we can depend on
 // types. Calls to the SDK could contain anything without any regard to typing.
