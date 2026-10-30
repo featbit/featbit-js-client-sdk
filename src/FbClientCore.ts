@@ -118,7 +118,7 @@ export class FbClientCore implements IFbClientCore {
     this.store = this.config.storeFactory(clientContext);
     this.dataSourceUpdates = new DataSourceUpdates(this.store, hasEventListeners, keys => {
       if (!this.closed && !this.contextChanging) onUpdate(keys);
-    });
+    }, this.logger);
     await this.store.identify(this.config.user);
     if (this.closed) return;
     this.evaluator = new Evaluator(this.store, this.logger);
@@ -237,7 +237,14 @@ export class FbClientCore implements IFbClientCore {
         this.initSuccess();
       } else {
         this.startInitializationTimer();
-        await this.dataSynchronizer!.identify(context);
+        const synchronizer = this.dataSynchronizer!;
+        try {
+          await synchronizer.identify(context);
+        } catch (error) {
+          // Polling fallback now owns readiness; stopping the old stream is not a failure.
+          if (this.dataSynchronizer !== synchronizer) return;
+          throw error;
+        }
       }
     } catch (error) {
       if (isCurrent()) {

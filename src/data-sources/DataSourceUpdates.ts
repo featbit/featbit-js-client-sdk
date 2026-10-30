@@ -5,6 +5,7 @@ import { IDataKind } from "../IDataKind";
 import DataKinds from "../store/DataKinds";
 import { IUser } from '../options/IUser';
 import { copyUser } from '../utils/copyUser';
+import { ILogger } from '../logging/ILogger';
 
 /** @internal */
 export default class DataSourceUpdates implements IDataSourceUpdates {
@@ -27,6 +28,7 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
     private readonly store: IStore,
     private readonly hasEventListeners: () => boolean,
     private readonly onChange: (keys: string[]) => void,
+    private readonly logger?: ILogger,
   ) {
   }
 
@@ -51,7 +53,14 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
     if (!this.hasEventListeners()) return;
     const keys = new Set([...Object.keys(oldFlags), ...Object.keys(newFlags)]);
     const changed = [...keys].filter(key => this.isUpdated(oldFlags[key], newFlags[key]));
-    if (changed.length > 0) this.onChange(changed);
+    if (changed.length > 0) {
+      try {
+        this.onChange(changed);
+      } catch (error) {
+        // Application listeners must not prevent sync completion or restarting after Identify.
+        this.logger?.warn('An update listener threw an error', error);
+      }
+    }
   }
 
   init(userKeyId: string, newData: IStoreDataStorage, callback?: () => void, isCurrent = () => true): Promise<void> {

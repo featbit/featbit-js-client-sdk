@@ -56,6 +56,86 @@ describe('browser context isolation', () => {
     return socket;
   }
 
+  it('finishes initialization and Identify even when update listeners throw', async () => {
+    client.on('update', () => { throw new Error('application update listener'); });
+    const failed = jest.fn();
+    client.on('failed', failed);
+    const initial = await initialize();
+    expect(client.initialized()).toBe(true);
+    initial.close(1006);
+    await jest.advanceTimersByTimeAsync(1000);
+    const reconnect = TestSocket.instances[TestSocket.instances.length - 1];
+    reconnect.open();
+    // The successful full response acknowledged the refresh policy despite the listener error.
+    expect(reconnect.sent[0].data.timestamp).toBe(1);
+
+    const identifying = client.identify(user('B'));
+    const waiting = client.waitForInitialization();
+    await flush();
+    const current = TestSocket.instances[TestSocket.instances.length - 1];
+    expect(current).not.toBe(reconnect);
+    current.open();
+    current.full('B');
+    await identifying;
+    await waiting;
+    expect(client.variation('flag', 'fallback')).toBe('B');
+    expect(failed).not.toHaveBeenCalled();
+  });
+
+  it.each([200, 401])('lets polling own Identify readiness after fallback (HTTP %s)', async status => {
+    await client.close();
+    const originalFetch = global.fetch;
+    let respond!: (response: any) => void;
+    global.fetch = jest.fn(() => new Promise(resolve => { respond = resolve; })) as any;
+    try {
+      client = new FbClientBuilder({ store: new InMemoryStore(), enablePollingFallback: true })
+        .sdkKey('key').user(user('A')).streamingUri('ws://example.test').pollingUri('http://example.test')
+        .eventsUri('http://example.test').disableEvents(true).logger(logger).build();
+      await flush();
+      const initial = TestSocket.instances[TestSocket.instances.length - 1];
+      initial.open();
+      initial.full('A');
+      await client.waitForInitialization();
+      const failed = jest.fn();
+      const ready = jest.fn();
+      client.on('failed', failed);
+      client.on('ready', ready);
+      const identifying = client.identify(user('B'));
+      let outcome = 'pending';
+      const waiting = client.waitForInitialization().then(
+        () => { outcome = 'ready'; },
+        () => { outcome = 'failed'; }
+      );
+      await flush();
+      TestSocket.instances[TestSocket.instances.length - 1].emit('error');
+      await flush();
+      expect(outcome).toBe('pending');
+      expect(failed).not.toHaveBeenCalled();
+      respond({ status, text: async () => JSON.stringify({ messageType: 'data-sync', data: {
+        userKeyId: 'same-key', eventType: 'full', featureFlags: [
+          { id: 'flag', timestamp: 12, variation: 'B', variationType: 'string', variationOptions: [] }
+        ]
+      } }) });
+      await flush();
+      await identifying;
+      await waiting;
+      if (status === 200) {
+        expect(outcome).toBe('ready');
+        await expect(client.waitForInitialization()).resolves.toBe(client);
+        expect(client.variation('flag', 'fallback')).toBe('B');
+        expect(ready).toHaveBeenCalledTimes(1);
+        expect(failed).not.toHaveBeenCalled();
+      } else {
+        expect(outcome).toBe('failed');
+        expect(client.initialized()).toBe(false);
+        expect(failed).toHaveBeenCalledTimes(1);
+        expect(ready).not.toHaveBeenCalled();
+      }
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
   it('does not replace a connecting socket on pageshow during startup or Identify', async () => {
     await flush();
     const initial = TestSocket.instances[0];

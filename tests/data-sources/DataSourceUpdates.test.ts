@@ -31,6 +31,22 @@ async function setup() {
 }
 
 describe('response commits and update events', () => {
+  it('completes full, patch and context notifications when application listeners throw', async () => {
+    const store = new RecordingStore();
+    await store.identify({ keyId: 'user' });
+    const failure = new Error('application listener failed');
+    const logger = { warn: jest.fn(), error: jest.fn(), info: jest.fn(), debug: jest.fn() };
+    const updates = new DataSourceUpdates(store, () => true, () => { throw failure; }, logger);
+    const completed = jest.fn();
+    await expect(updates.init('user', full(flag('a', 1)), completed)).resolves.toBeUndefined();
+    await expect(updates.upsertBatch('user', patch(flag('a', 2, 'true')), completed)).resolves.toBeUndefined();
+    expect(() => updates.checkUpdates(full(flag('a', 2, 'true')), full(), completed)).not.toThrow();
+    expect(completed).toHaveBeenCalledTimes(3);
+    expect(store.get(DataKinds.Flags, 'a')?.variation).toBe('true');
+    expect(logger.warn).toHaveBeenCalledTimes(3);
+    expect(logger.warn).toHaveBeenCalledWith('An update listener threw an error', failure);
+  });
+
   it('persists and notifies once per patch, with every changed value visible to listeners', async () => {
     const { store, changed, updates } = await setup();
     await updates.init('user', full(flag('a', 1), flag('b', 1)));

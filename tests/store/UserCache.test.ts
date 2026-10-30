@@ -43,6 +43,50 @@ describe('user cache retention', () => {
     ['memory', () => new InMemoryStore({ maxCachedUsers: 2, userCacheTtl: 100, logger })]
   ] as const;
 
+  it.each(factories)('%s does not restore a cache miss as initialized or suppress bootstrap', async (_, create) => {
+    const store = create();
+    await store.identify(a);
+    await store.identify(b);
+    await store.identify(a);
+    expect(store.initialized()).toBe(false);
+    const client = new FbClientBuilder({ store, offline: true, user: a, logger,
+      bootstrap: [{ id: 'flag', variation: 'bootstrap', variationType: 'string' } as any]
+    }).build();
+    try {
+      await client.waitForInitialization();
+      expect(client.variation('flag', 'fallback')).toBe('bootstrap');
+    } finally {
+      await client.close();
+    }
+  });
+
+  it.each(factories)('%s preserves authoritative empty snapshots over bootstrap', async (_, create) => {
+    const store = create();
+    await store.identify(a);
+    await store.init({ flags: {}, version: 0 });
+    await store.identify(b);
+    const client = new FbClientBuilder({ store, offline: true, user: a, logger,
+      bootstrap: [{ id: 'flag', variation: 'bootstrap', variationType: 'string' } as any]
+    }).build();
+    try {
+      await client.waitForInitialization();
+      expect(store.initialized()).toBe(true);
+      expect(client.variation('flag', 'fallback')).toBe('fallback');
+    } finally {
+      await client.close();
+    }
+  });
+
+  it('does not persist an empty placeholder across browser store instances', async () => {
+    const first = new LocalStorageStore({});
+    await first.identify(a);
+    first.close();
+    expect(localStorage.getItem(await cacheKey(a))).toBeNull();
+    const second = new LocalStorageStore({});
+    await second.identify(a);
+    expect(second.initialized()).toBe(false);
+  });
+
   it.each(factories)('%s evicts the least recently used context, including attribute variants', async (_, create) => {
     const store = create();
     await store.identify(a);
@@ -115,6 +159,7 @@ describe('user cache retention', () => {
     localStorage.setItem('fb-datastore-unrelated', '{corrupt');
     const store = new LocalStorageStore({ maxCachedUsers: 2, logger });
     await store.identify(a);
+    await store.init(snapshot('A'));
     expect(localStorage.getItem(keyB)).toBeNull();
     expect(localStorage.getItem(keyC)).toBeNull();
     expect(localStorage.getItem('fb-datastore-unrelated')).toBe('{corrupt');
@@ -165,7 +210,7 @@ describe('user cache retention', () => {
     const config = new Configuration({ offline: true, maxCachedUsers: Infinity, userCacheTtl: -1 });
     expect(config.maxCachedUsers).toBe(5);
     expect(config.userCacheTtl).toBe(7 * 24 * 60 * 60 * 1000);
-    const client = new FbClientBuilder().offline(true).user(a).logger(logger)
+    const client = new FbClientBuilder({ bootstrap: [{ id: 'flag', variation: 'local', variationType: 'string' } as any] }).offline(true).user(a).logger(logger)
       .maxCachedUsers(1).userCacheTtl(100).build();
     try {
       await client.waitForInitialization();

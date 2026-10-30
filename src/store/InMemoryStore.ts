@@ -37,7 +37,9 @@ export default class InMemoryStore extends BaseStore {
     this.storageGeneration = generation;
     const cached = this.cache.load(this.storageKey);
     this.store = { flags: {}, version: 0 };
-    if (cached) await this.restoreStore(cached);
+    // A cache miss is not an authoritative empty snapshot and must not suppress bootstrap.
+    if (!cached) return;
+    await this.restoreStore(cached);
     if (generation !== this.contextGeneration) return;
     await this.dumpStoreToStorage();
   }
