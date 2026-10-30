@@ -7,6 +7,9 @@ import { IUser } from "./IUser";
 import { IFlagBase } from "../evaluation";
 
 export interface IValidatedOptions {
+  fullSyncInterval: number;
+  maxCachedUsers: number;
+  userCacheTtl: number;
   startWaitTime: number;
   sdkKey: string;
   pollingUri: string;

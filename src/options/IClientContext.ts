@@ -9,6 +9,9 @@ import { IPlatform } from "../platform/IPlatform";
  * component types and are not accessible to custom components.
  */
 export interface IClientContext {
+  fullSyncInterval?: number;
+  maxCachedUsers?: number;
+  userCacheTtl?: number;
 
   logger?: ILogger;
 

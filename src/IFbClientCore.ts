@@ -15,6 +15,10 @@ import { ILogger } from "./logging";
 export interface IFbClientCore {
   /**
    * Set the current user of the client.
+   * Captures the user's attributes and starts a new readiness cycle, even when
+   * keyId is unchanged. Cached values for this context may be read while its
+   * initial full synchronization is pending. Superseded calls settle without
+   * changing the newer context.
    *
    * @param user
    *   The current user. The actual type of this parameter is
@@ -32,6 +36,9 @@ export interface IFbClientCore {
   /**
    * Wait until the client is initialized. The promise resolves when the client has finished initializing successfully.
    * If the client fails to initialize, the promise will be rejected.
+   * Call after identify() to wait for the newly selected context. Another
+   * Identify or close rejects an outstanding wait. The result is the client;
+   * use getAllVariations() to obtain evaluated flags.
    *
    * @returns A promise.
    */

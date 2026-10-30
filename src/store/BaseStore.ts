@@ -1,22 +1,29 @@
 import { IStore } from "../platform";
-import { IKeyedStoreItem, IStoreDataStorage, IStoreItem, IStoreKindData } from "./store";
+import { IKeyedStoreItem, IStoreDataStorage, IStoreItem, IStoreKindData, IStoreUpdate, StoreItemOriginEnum } from "./store";
 import { IUser } from "../options";
 import { IDataKind } from "../IDataKind";
+import DataKinds from "./DataKinds";
+import { copyUser } from '../utils/copyUser';
 
 export class BaseStore implements IStore {
-  protected store: IStoreDataStorage  = {} as IStoreDataStorage;
+  protected store: IStoreDataStorage = { flags: {}, version: 0 };
 
   protected initCalled = false;
 
   protected _user: IUser = {} as IUser;
+  protected contextGeneration = 0;
 
   constructor() {
   }
 
   async identify(user: IUser) {
-    this._user = {...user};
+    const generation = ++this.contextGeneration;
+    this._user = copyUser(user);
+    this.store = { flags: {}, version: 0 };
+    this.initCalled = false;
 
     await this.saveUser();
+    if (generation !== this.contextGeneration) return;
 
     // load version
     await this.loadStoreFromStorage();
@@ -26,7 +33,40 @@ export class BaseStore implements IStore {
     return this._user;
   }
 
+  private compactArchivedFlag(key: string, item: IStoreItem): IStoreItem {
+    if (item.matchReason !== 'flag archived') {
+      return item;
+    }
+
+    // Keep the version even though normal reads hide this record. Otherwise an
+    // older patch could resurrect the flag after its full data has been removed.
+    return {
+      key,
+      version: item.version,
+      origin: item.origin,
+      deleted: true,
+      matchReason: 'flag archived'
+    };
+  }
+
+  protected async restoreStore(data: IStoreDataStorage): Promise<void> {
+    const flags = Object.fromEntries(Object.entries(data.flags ?? {}).map(([key, item]) => {
+      const compacted = this.compactArchivedFlag(key, item);
+      return [key, compacted];
+    }));
+
+    // Restoring a cache preserves its cursor; it is not a new full response.
+    this.store = { ...data, flags };
+    this.initCalled = true;
+  }
+
   protected async addItem(kind: IDataKind, key: string, item: IStoreItem) {
+    if (this.applyItem(kind, key, item)) {
+      await this.dumpStoreToStorage();
+    }
+  }
+
+  private applyItem(kind: IDataKind, key: string, item: IStoreItem): boolean {
     let items = this.store[kind.namespace];
     if (!items) {
       items = {};
@@ -34,21 +74,32 @@ export class BaseStore implements IStore {
     }
     if (Object.hasOwnProperty.call(items, key)) {
       const old = items[key];
-      // we use <= here, the reason is that when a segment is changed, the upstream service would push the flag
-      // to client SDK with flag timestamp (version) instead of segment timestamp, so to ensure that the new flag value
-      // is saved, we need to use <=
-      if (!old || old.version <= item.version) {
-        items[key] = item;
+      // Accept equal versions: segment changes can update the evaluated value
+      // without changing the flag timestamp. Compare against hidden markers too.
+      if (old && old.version > item.version) {
+        return false;
       }
-    } else {
-      items[key] = item;
     }
+    items[key] = kind.namespace === DataKinds.Flags.namespace
+      ? this.compactArchivedFlag(key, item)
+      : item;
 
-    if (item.version > this.store.version) {
+    if (item.origin !== StoreItemOriginEnum.Local && item.version > this.store.version) {
       this.store.version = item.version;
     }
 
-    await this.dumpStoreToStorage();
+    return true;
+  }
+
+  async upsertBatch(updates: IStoreUpdate[]): Promise<void> {
+    // No awaits between items: readers see the complete patch before persistence.
+    let changed = false;
+    for (const { kind, data } of updates) {
+      changed = this.applyItem(kind, data.key, data) || changed;
+    }
+    if (changed) {
+      await this.dumpStoreToStorage();
+    }
   }
 
   get(kind: IDataKind, key: string): IStoreItem | null {
@@ -56,7 +107,7 @@ export class BaseStore implements IStore {
     if (items) {
       if (Object.prototype.hasOwnProperty.call(items, key)) {
         const item = items[key];
-        if (item) {
+        if (item && !item.deleted) {
           return item;
         }
       }
@@ -66,9 +117,9 @@ export class BaseStore implements IStore {
 
   all(kind: IDataKind): [IStoreKindData, number] {
     const result: IStoreKindData = {};
-    const items = this.store[kind.namespace] ?? {};
+    const items: IStoreKindData = this.store[kind.namespace] ?? {};
     Object.entries(items).forEach(([key, item]) => {
-      if (item) {
+      if (item && !item.deleted) {
         result[key] = <IStoreItem>item;
       }
     });
@@ -77,19 +128,20 @@ export class BaseStore implements IStore {
   }
 
   async init(allData: IStoreDataStorage) {
-    this.store = allData as IStoreDataStorage;
-
-    Object.keys(allData).map(namespace => {
-      Object.entries(allData[namespace]).forEach(([_, item]) => {
-        const ele = item as IStoreItem;
-        if (ele.version > this.store.version) {
-          this.store.version = ele.version;
-        }
-      })
-    });
+    const generation = this.contextGeneration;
+    let version = 0;
+    const flags = Object.fromEntries(Object.entries(allData.flags).map(([key, item]) => {
+      if (item.origin !== StoreItemOriginEnum.Local && item.version > version) {
+        version = item.version;
+      }
+      return [key, this.compactArchivedFlag(key, item)];
+    }));
+    // A full response replaces remote data, including obsolete archive markers,
+    // and may move the cursor backwards. Bootstrap timestamps are not remote cursors.
+    this.store = { flags, version };
 
     await this.dumpStoreToStorage();
-    this.initCalled = true;
+    if (generation === this.contextGeneration) this.initCalled = true;
   }
 
   async upsert(kind: IDataKind, data: IKeyedStoreItem) {
@@ -102,7 +154,7 @@ export class BaseStore implements IStore {
 
   /* eslint-disable class-methods-use-this */
   close(): void {
-    // For the LocalStorage store this is a no-op.
+    ++this.contextGeneration;
   }
 
   get version(): number {

@@ -5,34 +5,45 @@ import { IDataSourceUpdates } from "../../store/IDataSourceUpdates";
 import { VoidFunction } from "../../utils/VoidFunction";
 import { IDataKind } from "../../IDataKind";
 import { IKeyedStoreItem } from "../../store/store";
+import { IUser } from '../../options/IUser';
 
 export default class TestDataSynchronizer implements IDataSynchronizer {
   private readonly flags: IFlag[];
-  private readonly userKeyId: string = 'test-user-key-id';
+  private generation = 0;
+  private stopped = true;
 
   constructor(
     private dataSourceUpdates: IDataSourceUpdates,
     initialFlags: IFlag[],
     private readonly onStop: VoidFunction,
-    private readonly listeners: Map<EventName, ProcessStreamResponse>
+    private readonly listeners: Map<EventName, ProcessStreamResponse>,
+    private userKeyId: string,
+    private readonly errorHandler?: (error: Error) => void,
   ) {
     // make copies of these objects to decouple them from the originals
     // so updates made to the originals don't affect these internal data.
     this.flags = [...initialFlags];
   }
 
-  async start() {
-    this.listeners.forEach(({deserializeData, processJson }) => {
-      const data = deserializeData(this.flags);
-      processJson(this.userKeyId, data);
+  start(): void {
+    this.stopped = false;
+    const generation = ++this.generation;
+    const isCurrent = () => !this.stopped && generation === this.generation;
+    const listener = this.listeners.get('put')!;
+    // Follow the synchronous start contract and report asynchronous work through
+    // the existing completion/error callbacks, just like the network sources.
+    listener.processJson(this.userKeyId, listener.deserializeData(this.flags), isCurrent).catch(error => {
+      if (isCurrent()) this.errorHandler?.(error);
     });
   }
 
-  async identify(): Promise<void> {
-    // no-op
+  async identify(user: IUser): Promise<void> {
+    this.userKeyId = user.keyId;
   }
 
   stop() {
+    this.stopped = true;
+    ++this.generation;
     this.onStop();
   }
 
@@ -41,10 +52,16 @@ export default class TestDataSynchronizer implements IDataSynchronizer {
   }
 
   async upsert(kind: IDataKind, value: IKeyedStoreItem) {
-    return new Promise<void>((resolve) => {
-      this.dataSourceUpdates.upsert(this.userKeyId, kind, value, () => {
-        resolve();
-      });
-    });
+    const flag = {
+      ...value, id: value.key, timestamp: value.version,
+      variationOptions: value.variations ?? value.variationOptions
+    } as IFlag;
+    const index = this.flags.findIndex(item => item.id === flag.id);
+    if (index === -1) this.flags.push(flag);
+    else this.flags[index] = flag;
+    if (this.stopped) return;
+    const generation = this.generation;
+    await this.dataSourceUpdates.upsertBatch(this.userKeyId, [{ kind, data: value }], undefined,
+      () => !this.stopped && generation === this.generation);
   }
 }

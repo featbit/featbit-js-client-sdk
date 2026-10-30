@@ -164,7 +164,7 @@ const bob = new UserBuilder("unique_key_for_bob")
 If you already have the feature flags available, you can pass them to the SDK instead of requesting from the remote.
 
 
-> **_NOTE:_** The bootstrapped flags will be overridden by the remote flags if they are available.
+> **_NOTE:_** A valid cached snapshot takes precedence over bootstrap, including an empty snapshot or archived flags. Bootstrap is used only when no valid cache exists and the store is empty. Remote values replace bootstrap values with the same key; local-only bootstrap values survive omission from a remote full snapshot. Once a remote value or archive has replaced a bootstrap value, a later full snapshot does not restore that bootstrap value.
 
 ```javascript
 // define the option with the bootstrap parameter
@@ -276,6 +276,30 @@ const fbClient = new FbClientBuilder()
 When Offline mode is enabled, you should provide the flags with the [bootstrap](#bootstrap) option,
 otherwise, the SDK would return the defaul value you passed to the `variation` method.
 
+### User cache retention
+
+The built-in stores retain at most 5 user contexts by default, including the current context.
+A context includes the user's attributes, so changing attributes can select another cache entry.
+Historical entries expire after 7 days without being selected or updated. Configure these limits
+with `.maxCachedUsers(5)` and `.userCacheTtl(7 * 24 * 60 * 60 * 1000)`, or the corresponding
+constructor options. Both values must be positive safe integers; the TTL is in milliseconds.
+
+| Option / builder method | Default | Purpose |
+| --- | --- | --- |
+| `maxCachedUsers` | `5` | Maximum retained user contexts, including the current context |
+| `userCacheTtl` | `604800000` (7 days) | Idle expiry of historical user caches, in milliseconds |
+| `fullSyncInterval` | `86400000` (24 hours) | Online full refresh interval, in milliseconds, with ±10% jitter |
+
+Invalid values fall back to the defaults and are reported through the configured logger.
+
+These options apply to the built-in stores, not application-defined custom stores.
+
+### Archived and removed flags
+
+When a server response marks a flag with `matchReason: "flag archived"`, the built-in store removes its full evaluation data and retains only its key, version, origin and archive marker. Variation methods return the supplied default, and `getAllVariations()` excludes the flag. The marker prevents older patches from bringing the flag back. A later accepted unarchived value makes it available again.
+
+A successful full snapshot removes remote flags and archive markers omitted by the server. This reconciles deletions or archive changes missed while disconnected. Until the SDK receives an archive update or an authoritative full snapshot, a cached value can still be returned; periodic refresh is not an immediate deletion notification. Archived markers are retained within the active snapshot until replaced by newer data or removed by a full snapshot. Historical user caches are bounded by count and idle time, not byte size.
+
 ### Events
 
 #### Wait for ready
@@ -290,24 +314,22 @@ fbClient.on('ready', () => {
 });
 ```
 
-Or, you can use a promise instead of an event. The SDK has a method that returns a promise for initialization: **waitForInitialization()**. The behavior of waitUntilReady() is equivalent to the ready event. The promise resolves when the client receives its initial flag data. As with all promises, you can either use .then() to provide a callback, or use await if you are writing asynchronous code.
+Alternatively, `waitForInitialization()` resolves with the client after initialization succeeds for the current user context. Use `getAllVariations()` to retrieve evaluated flags. Offline initialization uses cached or bootstrap data. Each Identify starts a new readiness cycle.
 
 ```javascript
-fbClient.waitForInitialization().then((data) => {
-  // data has the following structure [ {id: 'featureFlagKey', variation: variationValue } ]
-  // variationValue has the type as defined on remote
-  // initialization succeeded, flag values are now available
-});
-// or, with await:
-const featureFlags = await fbClient.waitForInitialization();
-// initialization succeeded, flag values are now available
+await fbClient.waitForInitialization();
+const featureFlags = await fbClient.getAllVariations();
 ```
 
-The SDK only decides initialization has failed if it receives an error response indicating that the environment ID is invalid. If it has trouble connecting to FeatBit, it will keep retrying until it succeeds.
+Initialization can fail on an unrecoverable synchronization error or when `startWaitTime` expires (5 seconds by default). An initialization timeout does not stop background synchronization; a later successful response can make the client ready. Closing the client or starting another Identify rejects outstanding initialization waits.
 
 #### Subscribe to flag(s) changes
 
-To get notified when a feature flag is changed, we offer two methods
+Subscriptions are application callbacks registered with `on`, such as UI components that need to re-read a flag. A committed response emits at most one `update` event containing a flat `string[]` of changed keys, followed by `update:<key>` for each key. Listeners see the complete committed batch. Changes include addition, removal/archive, restoration, or a change in value or value type. A repeated archive, rejected stale patch, or metadata-only change does not emit an update.
+
+For an archived or removed key, re-reading inside the callback returns the supplied default. A full snapshot may emit removal events for flags omitted by the server. Switching users may also emit changes when the selected cache differs.
+
+There are two subscription forms:
 - subscribe to the changes of any feature flag(s)
 
 ```javascript
@@ -337,6 +359,12 @@ await fbClient.identify(user);
 ### Data synchronization
 
 We use **WebSocket** or **Polling** to make the local data synchronized with the server, and then store them in localStorage by default. Whenever there is any change to a feature flag or its related data, this change will be pushed to the SDK, the average synchronization time is less than **100ms** if WebSocket is configured. Be aware the WebSocket/Polling connection may be interrupted due to internet outage, but it will be resumed automatically once the problem is gone.
+
+The built-in synchronizers request a full snapshot on startup and after each `identify`, even when a cached cursor exists. Existing flags remain available while the snapshot is fetched. Ordinary reconnects use incremental synchronization until the next full refresh is due.
+
+Full refresh defaults to 24 hours with ±10% random jitter. Configure the interval in milliseconds with `new FbClientBuilder({ fullSyncInterval: 24 * 60 * 60 * 1000 })` or `.fullSyncInterval(...)`; it must be a positive safe integer. Only a successfully committed full response resets the interval. Patch responses, HTTP 304, and failed requests leave the full refresh pending. An empty full snapshot removes the previous remote flags and resets the cursor to zero.
+
+Streaming refresh replaces the WebSocket connection and requests timestamp zero, retrying a pending full refresh every 30 seconds. Polling requests a full snapshot on its next scheduled poll when due. Both modes check expiry when the page becomes visible or is restored, and polling fallback shares the same refresh state. Closing the client removes refresh timers and page listeners; offline mode creates none. Custom synchronizers must implement their own refresh scheduling.
 
 ### Network failure handling
 

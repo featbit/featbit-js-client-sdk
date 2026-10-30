@@ -42,6 +42,24 @@ export class FbClientBuilder {
     return new FbClient(this._options, this._platform);
   }
 
+  /** Full snapshot refresh interval in milliseconds; defaults to 24 hours with ±10% jitter. */
+  fullSyncInterval(fullSyncInterval: number): FbClientBuilder {
+    this._options.fullSyncInterval = fullSyncInterval;
+    return this;
+  }
+
+  /** Refer to {@link IOptions.maxCachedUsers}. */
+  maxCachedUsers(maxCachedUsers: number): FbClientBuilder {
+    this._options.maxCachedUsers = maxCachedUsers;
+    return this;
+  }
+
+  /** Refer to {@link IOptions.userCacheTtl}. */
+  userCacheTtl(userCacheTtl: number): FbClientBuilder {
+    this._options.userCacheTtl = userCacheTtl;
+    return this;
+  }
+
   platform(platform: IPlatform | undefined): FbClientBuilder {
     this._platform = platform;
     return this;
