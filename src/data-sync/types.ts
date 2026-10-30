@@ -1,5 +1,5 @@
-import { PollingError } from "../errors";
-import { IFlag } from "../evaluation/data/IFlag";
+import { PollingError } from "../errors.js";
+import { IFlag } from "../evaluation/data/IFlag.js";
 
 export type PollingErrorHandler = (err: PollingError) => void;
 

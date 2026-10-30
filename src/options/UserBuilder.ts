@@ -1,5 +1,5 @@
-import { IUser } from "./IUser";
-import {IContextProperty} from "../IContextProperty";
+import { IUser } from "./IUser.js";
+import {IContextProperty} from "../IContextProperty.js";
 
 /**
  * Creates an instance of the FeatBit user.

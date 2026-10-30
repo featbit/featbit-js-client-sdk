@@ -1,9 +1,9 @@
-import { IRequestor } from "./IRequestor";
-import Configuration from "../Configuration";
-import { IInfo } from "../platform/IInfo";
-import { IRequestOptions, IRequests, IResponse } from "../platform/requests";
-import { StreamingError } from "../errors";
-import { defaultHeaders } from "../utils/http";
+import { IRequestor } from "./IRequestor.js";
+import Configuration from "../Configuration.js";
+import { IInfo } from "../platform/IInfo.js";
+import { IRequestOptions, IRequests, IResponse } from "../platform/requests.js";
+import { StreamingError } from "../errors.js";
+import { defaultHeaders } from "../utils/http.js";
 
 /**
  * @internal

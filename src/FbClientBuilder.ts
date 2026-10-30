@@ -1,16 +1,16 @@
-import { IFbClient } from "./IFbClient";
-import { IOptions } from "./options/IOptions";
-import FbClient from "./platform/browser/FbClient";
-import { IDataSynchronizer } from "./data-sync/IDataSynchronizer";
-import { IClientContext } from "./options/IClientContext";
-import { IDataSourceUpdates } from "./store/IDataSourceUpdates";
-import { VoidFunction } from "./utils/VoidFunction";
-import { ILogger } from "./logging/ILogger";
-import { DataSyncModeEnum } from "./data-sync/DataSyncMode";
-import { IUser } from "./options/IUser";
-import { IFlagBase } from "./evaluation";
-import { IPlatform } from "./platform";
-import { ILogLevel } from "./logging";
+import { IFbClient } from "./IFbClient.js";
+import { IOptions } from "./options/IOptions.js";
+import FbClient from "./platform/browser/FbClient.js";
+import { IDataSynchronizer } from "./data-sync/IDataSynchronizer.js";
+import { IClientContext } from "./options/IClientContext.js";
+import { IDataSourceUpdates } from "./store/IDataSourceUpdates.js";
+import { VoidFunction } from "./utils/VoidFunction.js";
+import { ILogger } from "./logging/ILogger.js";
+import { DataSyncModeEnum } from "./data-sync/DataSyncMode.js";
+import { IUser } from "./options/IUser.js";
+import { IFlagBase } from "./evaluation/index.js";
+import { IPlatform } from "./platform/index.js";
+import { ILogLevel } from "./logging/index.js";
 
 /**
  * Creates an instance of the FeatBit client.

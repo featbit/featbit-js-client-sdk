@@ -1,4 +1,4 @@
-import { IEvent } from "./event";
+import { IEvent } from "./event.js";
 
 export interface IEventProcessor {
   close(): Promise<void>;

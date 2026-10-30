@@ -1,5 +1,5 @@
-import { IDataKind } from "../IDataKind";
-import { IStoreDataStorage, IKeyedStoreItem, IStoreUpdate } from "./store";
+import { IDataKind } from "../IDataKind.js";
+import { IStoreDataStorage, IKeyedStoreItem, IStoreUpdate } from "./store.js";
 
 /**
  * Interface that a data source implementation will use to push data into the SDK.

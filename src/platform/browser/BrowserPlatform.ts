@@ -1,11 +1,11 @@
-import { IPlatform } from "../IPlatform";
-import { IInfo } from "../IInfo";
-import { IRequests } from "../requests";
-import { IOptions } from "../../options/IOptions";
-import BrowserInfo from "./BrowserInfo";
-import { BrowserRequests } from "./BrowserRequests";
-import { IWebSocketWithEvents } from "../IWebSocket";
-import BrowserWebSocket from "./BrowserWebSocket";
+import { IPlatform } from "../IPlatform.js";
+import { IInfo } from "../IInfo.js";
+import { IRequests } from "../requests.js";
+import { IOptions } from "../../options/IOptions.js";
+import BrowserInfo from "./BrowserInfo.js";
+import { BrowserRequests } from "./BrowserRequests.js";
+import { IWebSocketWithEvents } from "../IWebSocket.js";
+import BrowserWebSocket from "./BrowserWebSocket.js";
 
 export class BrowserPlatform implements IPlatform {
   info: IInfo = new BrowserInfo();

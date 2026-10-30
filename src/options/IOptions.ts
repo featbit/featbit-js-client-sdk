@@ -1,13 +1,13 @@
-import { ILogger } from "../logging/ILogger";
-import { IDataSynchronizer } from "../data-sync/IDataSynchronizer";
-import { IClientContext } from "./IClientContext";
-import { IDataSourceUpdates } from "../store/IDataSourceUpdates";
-import { VoidFunction } from "../utils/VoidFunction";
-import { IStore } from "../platform/IStore";
-import { DataSyncModeEnum } from "../data-sync/DataSyncMode";
-import { IUser } from "./IUser";
-import { IFlagBase } from "../evaluation";
-import { ILogLevel } from "../logging";
+import { ILogger } from "../logging/ILogger.js";
+import { IDataSynchronizer } from "../data-sync/IDataSynchronizer.js";
+import { IClientContext } from "./IClientContext.js";
+import { IDataSourceUpdates } from "../store/IDataSourceUpdates.js";
+import { VoidFunction } from "../utils/VoidFunction.js";
+import { IStore } from "../platform/IStore.js";
+import { DataSyncModeEnum } from "../data-sync/DataSyncMode.js";
+import { IUser } from "./IUser.js";
+import { IFlagBase } from "../evaluation/index.js";
+import { ILogLevel } from "../logging/index.js";
 
 export interface IOptions {
   /** Full refresh interval in milliseconds. Positive safe integer; defaults to 24 hours with ±10% jitter. */

@@ -1,2 +1,2 @@
-export * from './createStreamListeners';
-export * from './DataSourceUpdates';
+export * from './createStreamListeners.js';
+export * from './DataSourceUpdates.js';

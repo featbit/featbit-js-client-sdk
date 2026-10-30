@@ -1,1 +1,1 @@
-export * from './IFlag';
+export * from './IFlag.js';

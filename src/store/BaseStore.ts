@@ -1,9 +1,9 @@
-import { IStore } from "../platform";
-import { IKeyedStoreItem, IStoreDataStorage, IStoreItem, IStoreKindData, IStoreUpdate, StoreItemOriginEnum } from "./store";
-import { IUser } from "../options";
-import { IDataKind } from "../IDataKind";
-import DataKinds from "./DataKinds";
-import { copyUser } from '../utils/copyUser';
+import { IStore } from "../platform/index.js";
+import { IKeyedStoreItem, IStoreDataStorage, IStoreItem, IStoreKindData, IStoreUpdate, StoreItemOriginEnum } from "./store.js";
+import { IUser } from "../options/index.js";
+import { IDataKind } from "../IDataKind.js";
+import DataKinds from "./DataKinds.js";
+import { copyUser } from '../utils/copyUser.js';
 
 export class BaseStore implements IStore {
   protected store: IStoreDataStorage = { flags: {}, version: 0 };

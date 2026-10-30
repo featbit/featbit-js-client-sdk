@@ -1,13 +1,13 @@
-import { ILogger } from "../logging/ILogger";
-import ClientContext from "../options/ClientContext";
-import { DeliveryStatus, IEventSender } from "./IEventSender";
-import { IEventQueue } from "./IEventQueue";
-import { DefaultEventQueue } from "./DefaultEventQueue";
-import { DefaultEventSender } from "./DefaultEventSender";
-import { AsyncEvent, FlushEvent, IEvent, PayloadEvent, ShutdownEvent } from "./event";
-import { IEventSerializer } from "./EventSerializer";
-import { DefaultEventSerializer } from "./DefaultEventSerializer";
-import sleep from "../utils/sleep";
+import { ILogger } from "../logging/ILogger.js";
+import ClientContext from "../options/ClientContext.js";
+import { DeliveryStatus, IEventSender } from "./IEventSender.js";
+import { IEventQueue } from "./IEventQueue.js";
+import { DefaultEventQueue } from "./DefaultEventQueue.js";
+import { DefaultEventSender } from "./DefaultEventSender.js";
+import { AsyncEvent, FlushEvent, IEvent, PayloadEvent, ShutdownEvent } from "./event.js";
+import { IEventSerializer } from "./EventSerializer.js";
+import { DefaultEventSerializer } from "./DefaultEventSerializer.js";
+import sleep from "../utils/sleep.js";
 
 export class EventDispatcher {
   private readonly logger: ILogger;

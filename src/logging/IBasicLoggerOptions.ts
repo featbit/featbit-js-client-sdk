@@ -1,4 +1,4 @@
-import { ILogLevel } from './LogLevel';
+import { ILogLevel } from './LogLevel.js';
 
 /**
  * Configuration for {@link basicLogger}.

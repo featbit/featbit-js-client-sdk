@@ -1,11 +1,11 @@
-import { IEventProcessor } from "./IEventProcessor";
-import { EventDispatcher } from "./EventDispatcher";
-import ClientContext from "../options/ClientContext";
-import { FlushEvent, IEvent, ShutdownEvent } from "./event";
-import { isNullOrUndefined } from "../utils/isNullOrUndefined";
-import { IEventQueue } from "./IEventQueue";
-import { DefaultEventQueue } from "./DefaultEventQueue";
-import { ILogger } from "../logging/ILogger";
+import { IEventProcessor } from "./IEventProcessor.js";
+import { EventDispatcher } from "./EventDispatcher.js";
+import ClientContext from "../options/ClientContext.js";
+import { FlushEvent, IEvent, ShutdownEvent } from "./event.js";
+import { isNullOrUndefined } from "../utils/isNullOrUndefined.js";
+import { IEventQueue } from "./IEventQueue.js";
+import { DefaultEventQueue } from "./DefaultEventQueue.js";
+import { ILogger } from "../logging/ILogger.js";
 
 export class DefaultEventProcessor implements IEventProcessor {
   private readonly logger: ILogger;

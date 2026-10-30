@@ -1,8 +1,8 @@
-import { IEvalDetail } from "./evaluation/IEvalDetail";
-import { IConvertResult } from "./utils/ValueConverters";
-import { IUser } from "./options";
-import { FlagValue } from "./evaluation";
-import { ILogger } from "./logging";
+import { IEvalDetail } from "./evaluation/IEvalDetail.js";
+import { IConvertResult } from "./utils/ValueConverters.js";
+import { IUser } from "./options/index.js";
+import { FlagValue } from "./evaluation/index.js";
+import { ILogger } from "./logging/index.js";
 
 /**
  * The FeatBit SDK client object.

@@ -1,5 +1,5 @@
-import { ILogger } from "../logging/ILogger";
-import { IPlatform } from "../platform/IPlatform";
+import { ILogger } from "../logging/ILogger.js";
+import { IPlatform } from "../platform/IPlatform.js";
 
 /**
  * Factory methods receive this class as a parameter.

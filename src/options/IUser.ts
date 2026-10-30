@@ -1,4 +1,4 @@
-import { IContextProperty } from "../IContextProperty";
+import { IContextProperty } from "../IContextProperty.js";
 
 export interface IUser {
   keyId: string;

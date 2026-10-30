@@ -1,4 +1,4 @@
-import { IDataKind } from "../IDataKind";
+import { IDataKind } from "../IDataKind.js";
 
 export default class DataKinds {
   static readonly Flags: IDataKind = {

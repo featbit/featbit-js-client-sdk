@@ -1,6 +1,6 @@
 // used only by tests
-import { IFlag, VariationDataType, IVariation, FlagValue } from "../../evaluation/data/IFlag";
-import { StoreItemOriginEnum } from "../../store";
+import { IFlag, VariationDataType, IVariation, FlagValue } from "../../evaluation/data/IFlag.js";
+import { StoreItemOriginEnum } from "../../store/index.js";
 
 export class FlagBuilder {
   private _id: string = `xxxxx-${new Date().getTime()}-xxxxxx`;

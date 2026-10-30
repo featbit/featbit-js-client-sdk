@@ -1,15 +1,15 @@
-import { isHttpRecoverable, PollingError } from '../errors';
-import { IDataSynchronizer } from './IDataSynchronizer';
-import { ILogger } from '../logging/ILogger';
-import Configuration from '../Configuration';
-import { EventName, PollingErrorHandler, ProcessStreamResponse, StreamResponseEventType } from './types';
-import Requestor from './Requestor';
-import { httpErrorMessage } from '../utils/http';
-import { IUser } from '../options/IUser';
-import { StoreItemOriginEnum } from '../store';
-import { onPageResume } from '../utils/onPageResume';
-import FullSyncPolicy from './FullSyncPolicy';
-import { copyUser } from '../utils/copyUser';
+import { isHttpRecoverable, PollingError } from '../errors.js';
+import { IDataSynchronizer } from './IDataSynchronizer.js';
+import { ILogger } from '../logging/ILogger.js';
+import Configuration from '../Configuration.js';
+import { EventName, PollingErrorHandler, ProcessStreamResponse, StreamResponseEventType } from './types.js';
+import Requestor from './Requestor.js';
+import { httpErrorMessage } from '../utils/http.js';
+import { IUser } from '../options/IUser.js';
+import { StoreItemOriginEnum } from '../store/index.js';
+import { onPageResume } from '../utils/onPageResume.js';
+import FullSyncPolicy from './FullSyncPolicy.js';
+import { copyUser } from '../utils/copyUser.js';
 
 export default class PollingDataSynchronizer implements IDataSynchronizer {
   private stopped = false;

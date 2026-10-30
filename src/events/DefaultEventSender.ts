@@ -1,9 +1,9 @@
-import { DeliveryStatus, IEventSender, IEventSenderResult } from "./IEventSender";
-import ClientContext from "../options/ClientContext";
-import { defaultHeaders, httpErrorMessage } from "../utils/http";
-import { IRequests } from "../platform/requests";
-import { isHttpRecoverable, UnexpectedResponseError } from "../errors";
-import sleep from "../utils/sleep";
+import { DeliveryStatus, IEventSender, IEventSenderResult } from "./IEventSender.js";
+import ClientContext from "../options/ClientContext.js";
+import { defaultHeaders, httpErrorMessage } from "../utils/http.js";
+import { IRequests } from "../platform/requests.js";
+import { isHttpRecoverable, UnexpectedResponseError } from "../errors.js";
+import sleep from "../utils/sleep.js";
 
 export class DefaultEventSender implements IEventSender {
   private readonly defaultHeaders: {

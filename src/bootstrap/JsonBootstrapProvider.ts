@@ -1,9 +1,9 @@
-import { IBootstrapProvider } from "./IBootstrapProvider";
-import { deserializeAll } from "../store/serialization";
-import { IDataSourceUpdates } from "../store/IDataSourceUpdates";
-import { IStoreDataStorage, StoreItemOriginEnum } from "../store/store";
-import { isNullOrUndefined } from "../utils/isNullOrUndefined";
-import { IFlag, IFlagBase } from "../evaluation/data/IFlag";
+import { IBootstrapProvider } from "./IBootstrapProvider.js";
+import { deserializeAll } from "../store/serialization.js";
+import { IDataSourceUpdates } from "../store/IDataSourceUpdates.js";
+import { IStoreDataStorage, StoreItemOriginEnum } from "../store/store.js";
+import { isNullOrUndefined } from "../utils/isNullOrUndefined.js";
+import { IFlag, IFlagBase } from "../evaluation/data/IFlag.js";
 
 export class JsonBootstrapProvider implements IBootstrapProvider {
   private dataSet?: IStoreDataStorage;

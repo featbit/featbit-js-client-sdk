@@ -1,4 +1,4 @@
-import { IInfo } from "../platform/IInfo";
+import { IInfo } from "../platform/IInfo.js";
 
 export type Headers = {
   Authorization: string;

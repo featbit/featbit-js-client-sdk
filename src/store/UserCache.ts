@@ -1,5 +1,5 @@
-import { IStoreDataStorage, StoreStorageKey } from './store';
-import { ILogger } from '../logging/ILogger';
+import { IStoreDataStorage, StoreStorageKey } from './store.js';
+import { ILogger } from '../logging/ILogger.js';
 
 export const defaultMaxCachedUsers = 5;
 export const defaultUserCacheTtl = 7 * 24 * 60 * 60 * 1000;

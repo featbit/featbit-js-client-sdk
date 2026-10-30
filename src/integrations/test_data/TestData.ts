@@ -1,11 +1,11 @@
-import { IFlag } from "../../evaluation/data/IFlag";
-import TestDataSynchronizer from "./TestDataSynchronizer";
-import { IClientContext } from "../../options/IClientContext";
-import { IDataSourceUpdates } from "../../store/IDataSourceUpdates";
-import { VoidFunction } from "../../utils/VoidFunction";
-import { createStreamListeners } from "../../data-sources/createStreamListeners";
-import { IStore } from "../../platform/IStore";
-import DataKinds from "../../store/DataKinds";
+import { IFlag } from "../../evaluation/data/IFlag.js";
+import TestDataSynchronizer from "./TestDataSynchronizer.js";
+import { IClientContext } from "../../options/IClientContext.js";
+import { IDataSourceUpdates } from "../../store/IDataSourceUpdates.js";
+import { VoidFunction } from "../../utils/VoidFunction.js";
+import { createStreamListeners } from "../../data-sources/createStreamListeners.js";
+import { IStore } from "../../platform/IStore.js";
+import DataKinds from "../../store/DataKinds.js";
 
 export default class TestData {
   private currentFlags: IFlag[] = [];

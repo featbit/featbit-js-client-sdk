@@ -1,4 +1,4 @@
-import { IUser } from "../options/IUser";
+import { IUser } from "../options/IUser.js";
 
 /**
  * The client data synchronizer

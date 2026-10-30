@@ -1,6 +1,6 @@
-import format from './format';
-import { ILogger } from "./ILogger";
-import { IBasicLoggerOptions } from "./IBasicLoggerOptions";
+import format from './format.js';
+import { ILogger } from "./ILogger.js";
+import { IBasicLoggerOptions } from "./IBasicLoggerOptions.js";
 
 const LogPriority = {
   debug: 0,

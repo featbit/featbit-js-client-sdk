@@ -8,8 +8,8 @@
 // These validators are also of trivial complexity, so we are allowing more than
 // one per file.
 
-import OptionMessages from "./OptionMessages";
-import { IFlagBase } from "../evaluation";
+import OptionMessages from "./OptionMessages.js";
+import { IFlagBase } from "../evaluation/index.js";
 
 /**
  * Interface for type validation.

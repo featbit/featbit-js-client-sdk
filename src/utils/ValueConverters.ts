@@ -1,4 +1,4 @@
-import { Regex } from "./Regex";
+import { Regex } from "./Regex.js";
 
 export interface IConvertResult<TValue> {
   isSucceeded: boolean,

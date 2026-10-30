@@ -1,4 +1,4 @@
-import { IEventEmitter } from "./IEventEmitter";
+import { IEventEmitter } from "./IEventEmitter.js";
 
 export type EventableConstructor<T = {}> = new (...args: any[]) => T;
 export type Eventable = EventableConstructor<{ emitter: IEventEmitter }>;

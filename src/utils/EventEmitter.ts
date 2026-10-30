@@ -1,5 +1,5 @@
-import { ILogger } from "../logging/ILogger";
-import { IEventEmitter } from "./IEventEmitter";
+import { ILogger } from "../logging/ILogger.js";
+import { IEventEmitter } from "./IEventEmitter.js";
 
 interface Events {
   [key: string | symbol]: {

@@ -6,7 +6,7 @@
       "es2019",
       "dom"
     ],
-    "declaration": false,
+    "declaration": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,

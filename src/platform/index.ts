@@ -1,11 +1,11 @@
-export * from './IInfo';
-export * from './IStore';
-export * from './IPlatform';
-export * from './IWebSocket';
-export * from './requests';
-export * from './browser/BrowserRequests';
+export * from './IInfo.js';
+export * from './IStore.js';
+export * from './IPlatform.js';
+export * from './IWebSocket.js';
+export * from './requests.js';
+export * from './browser/BrowserRequests.js';
 
-import BrowserWebSocket from './browser/BrowserWebSocket';
+import BrowserWebSocket from './browser/BrowserWebSocket.js';
 
 export {
   BrowserWebSocket

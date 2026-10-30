@@ -1,5 +1,5 @@
-import { IEventSerializer } from "./EventSerializer";
-import { EvalEvent, IEvent, MetricEvent } from "./event";
+import { IEventSerializer } from "./EventSerializer.js";
+import { EvalEvent, IEvent, MetricEvent } from "./event.js";
 
 export class DefaultEventSerializer implements IEventSerializer {
   serialize(events: IEvent[]): string {

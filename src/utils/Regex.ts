@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from "./isNullOrUndefined";
+import { isNullOrUndefined } from "./isNullOrUndefined.js";
 
 export class Regex {
   private static patternWithFlags = /\/(.*)\/([a-z]*)/i;

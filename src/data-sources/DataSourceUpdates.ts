@@ -1,11 +1,11 @@
-import { IDataSourceUpdates } from "../store/IDataSourceUpdates";
-import { IKeyedStoreItem, IStoreDataStorage, IStoreItem, IStoreKindData, IStoreUpdate, StoreItemOriginEnum } from "../store/store";
-import { IStore } from "../platform/IStore";
-import { IDataKind } from "../IDataKind";
-import DataKinds from "../store/DataKinds";
-import { IUser } from '../options/IUser';
-import { copyUser } from '../utils/copyUser';
-import { ILogger } from '../logging/ILogger';
+import { IDataSourceUpdates } from "../store/IDataSourceUpdates.js";
+import { IKeyedStoreItem, IStoreDataStorage, IStoreItem, IStoreKindData, IStoreUpdate, StoreItemOriginEnum } from "../store/store.js";
+import { IStore } from "../platform/IStore.js";
+import { IDataKind } from "../IDataKind.js";
+import DataKinds from "../store/DataKinds.js";
+import { IUser } from '../options/IUser.js';
+import { copyUser } from '../utils/copyUser.js';
+import { ILogger } from '../logging/ILogger.js';
 
 /** @internal */
 export default class DataSourceUpdates implements IDataSourceUpdates {

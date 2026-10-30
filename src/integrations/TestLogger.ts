@@ -1,4 +1,4 @@
-import { ILogger } from "../logging/ILogger";
+import { ILogger } from "../logging/ILogger.js";
 
 export class TestLogger implements ILogger {
   public logs: string[] = [];

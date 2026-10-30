@@ -1,8 +1,8 @@
-import { StoreStorageKey, CurrentUserStorageKey } from '../../store/store';
-import { IOptions } from '../../options/IOptions';
-import { BaseStore } from '../../store/BaseStore';
-import { hashSerializeUser, serializeUser } from '../../utils/serializeUser';
-import { UserCache } from '../../store/UserCache';
+import { StoreStorageKey, CurrentUserStorageKey } from '../../store/store.js';
+import { IOptions } from '../../options/IOptions.js';
+import { BaseStore } from '../../store/BaseStore.js';
+import { hashSerializeUser, serializeUser } from '../../utils/serializeUser.js';
+import { UserCache } from '../../store/UserCache.js';
 
 export default class LocalStorageStore extends BaseStore {
   private readonly cache: UserCache;
