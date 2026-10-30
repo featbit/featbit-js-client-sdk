@@ -43,6 +43,7 @@ export default class TestData {
         Object.values(this.currentFlags),
         () => {},
         listeners,
+        store.user.keyId,
       );
 
       return this.dataSynchronizer;

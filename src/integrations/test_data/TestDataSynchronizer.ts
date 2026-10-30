@@ -5,16 +5,19 @@ import { IDataSourceUpdates } from "../../store/IDataSourceUpdates";
 import { VoidFunction } from "../../utils/VoidFunction";
 import { IDataKind } from "../../IDataKind";
 import { IKeyedStoreItem } from "../../store/store";
+import { IUser } from '../../options/IUser';
 
 export default class TestDataSynchronizer implements IDataSynchronizer {
   private readonly flags: IFlag[];
-  private readonly userKeyId: string = 'test-user-key-id';
+  private generation = 0;
+  private stopped = true;
 
   constructor(
     private dataSourceUpdates: IDataSourceUpdates,
     initialFlags: IFlag[],
     private readonly onStop: VoidFunction,
-    private readonly listeners: Map<EventName, ProcessStreamResponse>
+    private readonly listeners: Map<EventName, ProcessStreamResponse>,
+    private userKeyId: string,
   ) {
     // make copies of these objects to decouple them from the originals
     // so updates made to the originals don't affect these internal data.
@@ -22,17 +25,20 @@ export default class TestDataSynchronizer implements IDataSynchronizer {
   }
 
   async start() {
-    this.listeners.forEach(({deserializeData, processJson }) => {
-      const data = deserializeData(this.flags);
-      processJson(this.userKeyId, data);
-    });
+    this.stopped = false;
+    const generation = ++this.generation;
+    const isCurrent = () => !this.stopped && generation === this.generation;
+    const listener = this.listeners.get('put')!;
+    await listener.processJson(this.userKeyId, listener.deserializeData(this.flags), isCurrent);
   }
 
-  async identify(): Promise<void> {
-    // no-op
+  async identify(user: IUser): Promise<void> {
+    this.userKeyId = user.keyId;
   }
 
   stop() {
+    this.stopped = true;
+    ++this.generation;
     this.onStop();
   }
 
@@ -41,10 +47,13 @@ export default class TestDataSynchronizer implements IDataSynchronizer {
   }
 
   async upsert(kind: IDataKind, value: IKeyedStoreItem) {
-    return new Promise<void>((resolve) => {
-      this.dataSourceUpdates.upsert(this.userKeyId, kind, value, () => {
-        resolve();
-      });
-    });
+    const flag = { ...value, id: value.key, timestamp: value.version } as IFlag;
+    const index = this.flags.findIndex(item => item.id === flag.id);
+    if (index === -1) this.flags.push(flag);
+    else this.flags[index] = flag;
+    if (this.stopped) return;
+    const generation = this.generation;
+    await this.dataSourceUpdates.upsertBatch(this.userKeyId, [{ kind, data: value }], undefined,
+      () => !this.stopped && generation === this.generation);
   }
 }

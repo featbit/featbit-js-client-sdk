@@ -60,6 +60,7 @@ export class FbClientCore implements IFbClientCore {
   private store?: IStore;
 
   private dataSynchronizer?: IDataSynchronizer;
+  private customSynchronizer?: IDataSynchronizer;
 
   private eventProcessor?: IEventProcessor;
 
@@ -179,13 +180,14 @@ export class FbClientCore implements IFbClientCore {
         )
         : createPollingSync();
 
-      this.dataSynchronizer = this.config.dataSynchronizerFactory?.(
+      this.customSynchronizer = this.config.dataSynchronizerFactory?.(
         clientContext,
         this.store,
         this.dataSourceUpdates,
         () => this.initSuccess(),
         (e) => this.dataSourceErrorHandler(e),
-      ) ?? dataSynchronizer;
+      );
+      this.dataSynchronizer = this.customSynchronizer ?? dataSynchronizer;
     }
 
     if (!this.contextChanging) this.start();
@@ -240,6 +242,11 @@ export class FbClientCore implements IFbClientCore {
         const synchronizer = this.dataSynchronizer!;
         try {
           await synchronizer.identify(context);
+          if (isCurrent() && this.dataSynchronizer === synchronizer && synchronizer === this.customSynchronizer) {
+            // Custom Identify selects the user; start resumes the stopped source.
+            // Readiness still requires its initialization-success callback.
+            synchronizer.start();
+          }
         } catch (error) {
           // Polling fallback now owns readiness; stopping the old stream is not a failure.
           if (this.dataSynchronizer !== synchronizer) return;

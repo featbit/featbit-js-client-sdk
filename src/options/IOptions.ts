@@ -145,6 +145,12 @@ export interface IOptions {
 
   /**
    * A component that obtains feature flag data and puts it in the store.
+   * Custom sources are started at initialization. On Identify, the client stops
+   * the source, switches the store context, awaits identify(user), then calls start().
+   * stop() must cancel pending work, including stale completion callbacks; start()
+   * must support restarting. After committing data for the selected user, invoke
+   * initSuccessHandler for each readiness cycle. Resolving identify() alone does
+   * not mark the client ready.
    *
    * Defaults to {@link WebSocketDataSynchronizer}.
    */
