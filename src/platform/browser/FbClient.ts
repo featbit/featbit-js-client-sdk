@@ -36,7 +36,7 @@ class FbClient extends FbClientCore {
 
     let { store } = options;
     if (!store) {
-      store = new LocalStorageStore(options);
+      store = new LocalStorageStore({...options, logger});
     }
 
     super(

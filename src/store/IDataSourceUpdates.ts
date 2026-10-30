@@ -1,5 +1,5 @@
 import { IDataKind } from "../IDataKind";
-import { IStoreDataStorage, IKeyedStoreItem } from "./store";
+import { IStoreDataStorage, IKeyedStoreItem, IStoreUpdate } from "./store";
 
 /**
  * Interface that a data source implementation will use to push data into the SDK.
@@ -23,7 +23,7 @@ export interface IDataSourceUpdates {
    * @param callback
    *   Will be called when the store has been initialized.
    */
-  init(userKeyId: string, allData: IStoreDataStorage, callback?: () => void): Promise<void>;
+  init(userKeyId: string, allData: IStoreDataStorage, callback?: () => void, isCurrent?: () => boolean): Promise<void>;
 
   /**
    * Compare old and new data, check if any update exists
@@ -46,7 +46,7 @@ export interface IDataSourceUpdates {
 
   /**
    * Updates or inserts an item in the specified collection. For updates, the object will only be
-   * updated if the existing version is less than the new version.
+   * updated if the existing version is less than or equal to the new version.
    *
    * @param userKeyId
    *  The key ID of the user whose data is being updated.
@@ -58,11 +58,14 @@ export interface IDataSourceUpdates {
    * @param data
    *   The contents of the entity, as an object that can be converted to JSON. The store
    *   should check the `version` property of this object, and should *not* overwrite any
-   *   existing data if the existing `version` is greater than or equal to that value.
+   *   existing data if the existing `version` is greater than that value.
    *   The actual type of this parameter is {@link IKeyedStoreItem}.
    *
    * @param callback
    *   Will be called after the upsert operation is complete.
    */
   upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem, callback: () => void): Promise<void>;
+
+  /** Apply a patch and notify once after the entire batch has committed. */
+  upsertBatch(userKeyId: string, updates: IStoreUpdate[], callback?: () => void, isCurrent?: () => boolean): Promise<void>;
 }

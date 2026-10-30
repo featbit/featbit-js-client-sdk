@@ -10,6 +10,15 @@ import { IFlagBase } from "../evaluation";
 import { ILogLevel } from "../logging";
 
 export interface IOptions {
+  /** Full refresh interval in milliseconds. Positive safe integer; defaults to 24 hours with ±10% jitter. */
+  fullSyncInterval?: number;
+
+  /** Maximum cached user contexts, including the current context. Positive integer; defaults to 5. */
+  maxCachedUsers?: number;
+
+  /** Idle lifetime of a cached user context in milliseconds. Positive integer; defaults to 7 days. */
+  userCacheTtl?: number;
+
   /**
    * The user for whom you are evaluating feature flags.
    */

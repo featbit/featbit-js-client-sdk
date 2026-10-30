@@ -17,6 +17,8 @@ import { EmptyString } from "./constants";
 import { DataSyncModeEnum } from "./data-sync/DataSyncMode";
 import { IUser } from "./options/IUser";
 import { JsonBootstrapProvider } from "./bootstrap";
+import { defaultFullSyncInterval } from './data-sync/FullSyncPolicy';
+import { defaultMaxCachedUsers, defaultUserCacheTtl, isPositiveInteger } from './store/UserCache';
 
 // Once things are internal to the implementation of the SDK we can depend on
 // types. Calls to the SDK could contain anything without any regard to typing.
@@ -28,6 +30,9 @@ import { JsonBootstrapProvider } from "./bootstrap";
  * and these should allow for conditional construction.
  */
 const validations: Record<string, TypeValidator> = {
+  fullSyncInterval: { is: isPositiveInteger, getType: () => 'positive safe integer' },
+  maxCachedUsers: { is: isPositiveInteger, getType: () => 'positive safe integer' },
+  userCacheTtl: { is: isPositiveInteger, getType: () => 'positive safe integer' },
   startWaitTime: TypeValidators.Number,
   sdkKey: TypeValidators.String,
   pollingUri: TypeValidators.String,
@@ -53,6 +58,9 @@ const validations: Record<string, TypeValidator> = {
  * @internal
  */
 export const defaultValues: IValidatedOptions = {
+  fullSyncInterval: defaultFullSyncInterval,
+  maxCachedUsers: defaultMaxCachedUsers,
+  userCacheTtl: defaultUserCacheTtl,
   startWaitTime: 5000,
   sdkKey: '',
   pollingUri: '',
@@ -67,7 +75,7 @@ export const defaultValues: IValidatedOptions = {
   pollingInterval: 30000,
   offline: false,
   enablePollingFallback: false,
-  store: (options: IOptions) => new InMemoryStore(),
+  store: (options: IOptions) => new InMemoryStore(options),
   bootstrap: undefined,
   user: undefined,
 };
@@ -136,6 +144,9 @@ function validateEndpoints(options: IOptions, validatedOptions: IValidatedOption
 }
 
 export default class Configuration {
+  public readonly fullSyncInterval: number;
+  public readonly maxCachedUsers: number;
+  public readonly userCacheTtl: number;
   public readonly startWaitTime: number;
 
   public readonly sdkKey: string;
@@ -198,6 +209,9 @@ export default class Configuration {
     this.eventsUri = `${ canonicalizeUri(validatedOptions.eventsUri) }/api/public/insight/track`;
 
     this.startWaitTime = validatedOptions.startWaitTime;
+    this.fullSyncInterval = validatedOptions.fullSyncInterval;
+    this.maxCachedUsers = validatedOptions.maxCachedUsers;
+    this.userCacheTtl = validatedOptions.userCacheTtl;
 
     this.sdkKey = validatedOptions.sdkKey;
     this.webSocketPingInterval = validatedOptions.webSocketPingInterval!;

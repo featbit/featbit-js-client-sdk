@@ -8,6 +8,9 @@ import { IUser } from "./IUser";
  * when building SDK components.
  */
 export default class ClientContext implements IClientContext {
+  fullSyncInterval?: number;
+  maxCachedUsers?: number;
+  userCacheTtl?: number;
   flushInterval: number;
   maxEventsInQueue: number;
   offline: boolean;
@@ -19,6 +22,9 @@ export default class ClientContext implements IClientContext {
   constructor(
     public readonly sdkKey: string,
     configuration: {
+      fullSyncInterval?: number;
+      maxCachedUsers?: number;
+      userCacheTtl?: number;
       logger?: ILogger;
       offline?: boolean;
       flushInterval: number;
@@ -30,6 +36,9 @@ export default class ClientContext implements IClientContext {
     public readonly platform: IPlatform,
   ) {
     this.logger = configuration.logger!;
+    this.fullSyncInterval = configuration.fullSyncInterval;
+    this.maxCachedUsers = configuration.maxCachedUsers;
+    this.userCacheTtl = configuration.userCacheTtl;
     this.offline = configuration.offline!;
     this.flushInterval = configuration.flushInterval;
     this.maxEventsInQueue = configuration.maxEventsInQueue;

@@ -1,46 +1,44 @@
-import {
-  StoreStorageKey,
-  IStoreDataStorage
-} from "./store";
-import { BaseStore } from "./BaseStore";
-import { hashSerializeUser, deepCopy } from "../utils";
+import { StoreStorageKey } from './store';
+import { BaseStore } from './BaseStore';
+import { hashSerializeUser } from '../utils';
+import { UserCache, UserCacheOptions } from './UserCache';
 
 export default class InMemoryStore extends BaseStore {
-  private allStores: { [DataStoreStorageKey: string]: IStoreDataStorage } = {};
+  private readonly cache: UserCache;
+  private storageKey?: string;
+  private storageGeneration = -1;
 
-  constructor() {
+  constructor(options: UserCacheOptions = {}) {
     super();
-  }
-
-  /* eslint-disable class-methods-use-this */
-  close(): void {
-    // For the LocalStorage store this is a no-op.
+    const entries = new Map<string, string>();
+    this.cache = new UserCache({
+      keys: () => [...entries.keys()],
+      read: key => entries.get(key) ?? null,
+      write: (key, value) => { entries.set(key, value); },
+      remove: key => { entries.delete(key); }
+    }, options);
   }
 
   get description(): string {
-    return 'in-memory-store'
-  }
-
-  protected async saveUser(): Promise<void> {
-    // For in-memory store, this is a no-op.
+    return 'in-memory-store';
   }
 
   protected override async dumpStoreToStorage() {
-    const userHash = await hashSerializeUser(this._user);
-    const storageKey = `${StoreStorageKey}-${userHash}`;
-    this.allStores[storageKey] = deepCopy(this.store);
+    if (this.storageKey && this.storageGeneration === this.contextGeneration) {
+      this.cache.save(this.storageKey, this.store);
+    }
   }
 
   protected override async loadStoreFromStorage() {
-    const userHash = await hashSerializeUser(this._user);
-    const storageKey = `${StoreStorageKey}-${userHash}`;
-
-    const store = this.allStores[storageKey];
-
-    if (!!store) {
-      this.store = store;
-    } else {
-      this.store.version = 0;
-    }
+    const generation = this.contextGeneration;
+    const storageKey = `${StoreStorageKey}-${await hashSerializeUser(this._user)}`;
+    if (generation !== this.contextGeneration) return;
+    this.storageKey = storageKey;
+    this.storageGeneration = generation;
+    const cached = this.cache.load(this.storageKey);
+    this.store = { flags: {}, version: 0 };
+    if (cached) await this.restoreStore(cached);
+    if (generation !== this.contextGeneration) return;
+    await this.dumpStoreToStorage();
   }
 }

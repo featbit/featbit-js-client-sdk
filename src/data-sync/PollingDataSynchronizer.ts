@@ -1,109 +1,126 @@
-import { isHttpRecoverable, PollingError } from "../errors";
-import { IDataSynchronizer } from "./IDataSynchronizer";
-import { ILogger } from "../logging/ILogger";
-import Configuration from "../Configuration";
-import { EventName, PollingErrorHandler, ProcessStreamResponse, StreamResponseEventType } from "./types";
-import Requestor from "./Requestor";
-import { httpErrorMessage } from "../utils/http";
-import { IUser } from "../options/IUser";
-import { StoreItemOriginEnum } from "../store";
+import { isHttpRecoverable, PollingError } from '../errors';
+import { IDataSynchronizer } from './IDataSynchronizer';
+import { ILogger } from '../logging/ILogger';
+import Configuration from '../Configuration';
+import { EventName, PollingErrorHandler, ProcessStreamResponse, StreamResponseEventType } from './types';
+import Requestor from './Requestor';
+import { httpErrorMessage } from '../utils/http';
+import { IUser } from '../options/IUser';
+import { StoreItemOriginEnum } from '../store';
+import { onPageResume } from '../utils/onPageResume';
+import FullSyncPolicy from './FullSyncPolicy';
+import { copyUser } from '../utils/copyUser';
 
 export default class PollingDataSynchronizer implements IDataSynchronizer {
   private stopped = false;
-
-  private logger?: ILogger;
-
-  private pollingInterval: number;
-
-  private user: IUser | undefined;
-
-  private timeoutHandle: any;
+  private inFlight = false;
+  private lastAttempt = 0;
+  private removeResumeListener?: () => void;
+  private readonly logger?: ILogger;
+  private readonly pollingInterval: number;
+  private user: IUser;
+  private timeoutHandle?: ReturnType<typeof setTimeout>;
+  private generation = 0;
+  private identifyResolve?: () => void;
+  private identifyReject?: (error: Error) => void;
 
   constructor(
     config: Configuration,
     private readonly requestor: Requestor,
     private readonly getStoreTimestamp: () => number,
     private readonly listeners: Map<EventName, ProcessStreamResponse>,
+    private readonly fullSync: FullSyncPolicy,
     private readonly errorHandler?: PollingErrorHandler,
   ) {
     this.logger = config.logger;
     this.pollingInterval = config.pollingInterval;
-    this.user = config.user;
+    this.user = copyUser(config.user);
   }
 
-  private poll(resolve?: () => void, reject?: () => void) {
-    if (this.stopped) {
-      return;
-    }
-
-    const startTime = Date.now();
-    this.logger?.debug('Polling for feature flag and segments updates');
-    this.requestor.requestData(this.getStoreTimestamp(), this.user, async (err, body) => {
-      const elapsed = Date.now() - startTime;
-      const sleepFor = Math.max(this.pollingInterval - elapsed, 0);
-
-      this.logger?.debug('Elapsed: %d ms, sleeping for %d ms', elapsed, sleepFor);
+  private poll() {
+    if (this.stopped || this.inFlight) return;
+    this.inFlight = true;
+    this.lastAttempt = Date.now();
+    const generation = this.generation;
+    const user = copyUser(this.user);
+    const isCurrent = () => !this.stopped && generation === this.generation;
+    const startedAt = Date.now();
+    let handled = false;
+    const schedule = () => {
+      if (!isCurrent()) return;
+      this.inFlight = false;
+      this.timeoutHandle = setTimeout(() => this.poll(), Math.max(this.pollingInterval - (Date.now() - startedAt), 0));
+    };
+    this.requestor.requestData(this.fullSync.timestamp(this.getStoreTimestamp()), user, async (err, body) => {
+      if (!isCurrent() || handled) return;
+      handled = true;
       if (err) {
-        const {status} = err;
-        if (!isHttpRecoverable(status)) {
-          const message = httpErrorMessage(err, 'polling request');
-          this.logger?.error(message);
-          this.errorHandler?.(new PollingError(message, status));
-          // It is not recoverable, return and do not trigger another
-          // poll.
-          reject?.();
+        if (!isHttpRecoverable(err.status)) {
+          const error = new PollingError(httpErrorMessage(err, 'polling request'), err.status);
+          const reject = this.identifyReject;
+          this.identifyReject = undefined;
+          this.stop();
+          reject?.(error);
+          this.identifyResolve = this.identifyReject = undefined;
+          this.errorHandler?.(error);
           return;
         }
         this.logger?.warn(httpErrorMessage(err, 'polling request', 'will retry'));
-        // Falling through, there was some type of error, we need to trigger
-        // a new poll.
-        this.timeoutHandle = setTimeout(() => {
-          this.poll(resolve, reject);
-        }, sleepFor);
-      } else {
-        let featureFlags = [];
-        let userKeyId = this.user?.keyId!;
-        let processStreamResponse: ProcessStreamResponse | undefined = this.listeners.get('patch');
-
-        if (body) {
-          const message = JSON.parse(body);
-          if (message.messageType === 'data-sync') {
-            switch (message.data.eventType) {
-              case StreamResponseEventType.patch:
-                processStreamResponse = this.listeners.get('patch');
-                break;
-              case StreamResponseEventType.full:
-                processStreamResponse = this.listeners.get('put');
-                break;
-            }
-
-            ({featureFlags, userKeyId} = message.data);
-            // set origin
-            featureFlags =  featureFlags.map((ff: any) => ({...ff, origin: StoreItemOriginEnum.Remote}));
-          }
-        }
-
-        const data = processStreamResponse?.deserializeData?.(featureFlags);
-        await processStreamResponse?.processJson?.(userKeyId, data);
-        resolve?.();
-        // Falling through, there was some type of error, we need to trigger
-        // a new poll.
-        this.timeoutHandle = setTimeout(() => {
-          this.poll();
-        }, sleepFor);
+        schedule();
+        return;
       }
+
+      try {
+        let listener = this.listeners.get('patch');
+        let flags = [];
+        // A 304 is represented by null by Requestor. Other responses must carry
+        // a valid envelope for the user captured when this request started.
+        if (body !== null) {
+          const message = JSON.parse(body);
+          if (message.messageType !== 'data-sync' || message.data?.userKeyId !== user.keyId ||
+              !Array.isArray(message.data.featureFlags)) throw new Error('Invalid polling response');
+          if (message.data.eventType === StreamResponseEventType.full) listener = this.listeners.get('put');
+          else if (message.data.eventType !== StreamResponseEventType.patch) throw new Error('Invalid polling event type');
+          flags = message.data.featureFlags.map((flag: any) => ({ ...flag, origin: StoreItemOriginEnum.Remote }));
+        }
+        if (!listener) throw new Error('Missing polling response handler');
+        await listener.processJson(user.keyId, listener.deserializeData(flags), isCurrent);
+        if (!isCurrent()) return;
+        this.identifyResolve?.();
+        this.identifyResolve = this.identifyReject = undefined;
+      } catch (error) {
+        if (isCurrent()) this.logger?.warn('Unable to process polling response', error);
+      }
+      schedule();
     });
   }
 
-  async identify(user: IUser): Promise<void> {
-    this.user = {...user};
-    if (this.timeoutHandle) {
-      clearTimeout(this.timeoutHandle);
-      this.timeoutHandle = undefined;
-    }
-
+  identify(user: IUser): Promise<void> {
+    this.stop();
+    this.user = copyUser(user);
+    this.stopped = false;
+    this.watchResume();
     return new Promise((resolve, reject) => {
-      this.poll(resolve, reject);
+      this.identifyResolve = resolve;
+      this.identifyReject = reject;
+      this.poll();
+    });
+  }
+
+  start(): void {
+    this.stop();
+    this.stopped = false;
+    this.watchResume();
+    this.poll();
+  }
+
+  private watchResume(): void {
+    this.removeResumeListener = onPageResume(() => {
+      if (!this.stopped && !this.inFlight && this.fullSync.due &&
+          Date.now() - this.lastAttempt >= this.pollingInterval) {
+        clearTimeout(this.timeoutHandle);
+        this.poll();
+      }
     });
   }
 
@@ -111,18 +128,15 @@ export default class PollingDataSynchronizer implements IDataSynchronizer {
     this.stop();
   }
 
-  start(): void {
-    this.poll();
-  }
-
   stop(): void {
-    if (this.timeoutHandle) {
-      clearTimeout(this.timeoutHandle);
-      this.timeoutHandle = undefined;
-    }
     this.stopped = true;
+    this.inFlight = false;
+    this.removeResumeListener?.();
+    this.removeResumeListener = undefined;
+    ++this.generation;
+    clearTimeout(this.timeoutHandle);
+    this.timeoutHandle = undefined;
+    this.identifyReject?.(new Error('Identify superseded or synchronizer stopped'));
+    this.identifyResolve = this.identifyReject = undefined;
   }
 }
-
-
-

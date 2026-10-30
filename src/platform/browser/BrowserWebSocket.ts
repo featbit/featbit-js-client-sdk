@@ -1,169 +1,145 @@
-import { IWebSocket, IWebSocketConfig } from "../IWebSocket";
-import { Emits } from "../../utils/Emits";
-import { IEventEmitter } from "../../utils/IEventEmitter";
-import { EventEmitter } from "../../utils/EventEmitter";
-import { generateConnectionToken } from "../../data-sync/utils";
-import { StreamResponseEventType } from "../../data-sync/types";
-import { IUser } from "../../options/IUser";
+import { IWebSocket, IWebSocketConfig } from '../IWebSocket';
+import { Emits } from '../../utils/Emits';
+import { IEventEmitter } from '../../utils/IEventEmitter';
+import { EventEmitter } from '../../utils/EventEmitter';
+import { generateConnectionToken } from '../../data-sync/utils';
+import { StreamResponseEventType } from '../../data-sync/types';
+import { IUser } from '../../options/IUser';
+import { copyUser } from '../../utils/copyUser';
 
 const socketConnectionIntervals = [1000, 3000, 5000, 7000, 11000, 13000, 30000, 60000];
 
 class BrowserWebSocket implements IWebSocket {
-  emitter: IEventEmitter;
+  emitter: IEventEmitter = new EventEmitter();
   private ws?: WebSocket;
   private retryCounter = 0;
-  private closed: boolean = false;
-  private hasConnected: boolean = false;
-
+  private closed = false;
+  private hasConnected = false;
+  private generation = 0;
   private _config: IWebSocketConfig = {} as IWebSocketConfig;
-  private livenessTimer: ReturnType<typeof setTimeout> | undefined;
-
-  constructor() {
-    this.emitter = new EventEmitter();
-  }
+  private livenessTimer?: ReturnType<typeof setTimeout>;
+  private pingTimer?: ReturnType<typeof setTimeout>;
+  private reconnectTimer?: ReturnType<typeof setTimeout>;
 
   identify(user: IUser): boolean {
-    this._config.user = user;
-    return this.doDataSync();
+    this._config.user = copyUser(user);
+    this.retryCounter = 0;
+    this.hasConnected = false;
+    this.connect();
+    return true;
   }
 
   connect() {
-    let that = this;
+    this.clearTimers();
+    const previous = this.ws;
+    const generation = ++this.generation;
+    this.ws = undefined;
+    previous?.close(4003, 'Connection replaced');
+    this.closed = false;
     const startTime = Date.now();
-    const url = this._config.streamingUri.replace(/^http/, 'ws') + `?type=client&token=${ generateConnectionToken(this._config.sdkKey) }`;
-    this.ws = new WebSocket(url);
+    const url = this._config.streamingUri.replace(/^http/, 'ws') + `?type=client&token=${generateConnectionToken(this._config.sdkKey)}`;
+    const socket = new WebSocket(url);
+    this.ws = socket;
+    const isCurrent = () => !this.closed && this.generation === generation && this.ws === socket;
 
-    // Connection opened
-    that.ws?.addEventListener('open', function (this: WebSocket, event) {
-      // this is the websocket instance to which the current listener is binded to, it's different from that.socket
-      that._config.logger.info(`WebSocket connection succeeded, connection time: ${ Date.now() - startTime } ms`);
-      that.hasConnected = true;
-      that.retryCounter = 0;
-      that.doDataSync();
-      that.sendPingMessage();
-      that.bumpLiveness();
+    socket.addEventListener('open', () => {
+      if (!isCurrent()) return;
+      this._config.logger.info(`WebSocket connection succeeded, connection time: ${Date.now() - startTime} ms`);
+      this.hasConnected = true;
+      this.retryCounter = 0;
+      this.doDataSync();
+      if (!isCurrent()) return;
+      this.sendPingMessage(socket, isCurrent);
+      this.bumpLiveness(socket, isCurrent);
     });
-
-    // Connection closed
-    that.ws?.addEventListener('close', function (event) {
-      that._config.logger.warn('WebSocket closed');
-      if (event.code === 4003) { // do not reconnect when 4003
-        return;
-      }
-
-      that.reconnect();
+    socket.addEventListener('close', event => {
+      if (!isCurrent()) return;
+      this.clearTimers();
+      this.ws = undefined;
+      if (event.code !== 4003) this.reconnect(generation);
     });
-
-    // Connection error
-    that.ws?.addEventListener('error', function (event) {
-      // reconnect
-      that._config.logger.debug('error');
-      if (!that.hasConnected) {
-        that._config.logger.warn('WebSocket initial connection failed, emitting network-error');
-        that.emitter.emit('network-error');
-      }
+    socket.addEventListener('error', () => {
+      if (isCurrent() && !this.hasConnected) this.emitter.emit('network-error');
     });
-
-    // Listen for messages
-    that.ws?.addEventListener('message', function (event) {
-      that.bumpLiveness();
-      const message = JSON.parse(event.data as string);
-      if (message.messageType === 'data-sync') {
-        if (message.data.userKeyId !== that._config.user.keyId) {
-          // abort the message if message is not for the current user
-          return;
-        }
-
-        switch (message.data.eventType) {
-          case StreamResponseEventType.patch:
-            that.emitter.emit('patch', message);
-            break;
-          case StreamResponseEventType.full:
-            that.emitter.emit('put', message);
-            break;
-        }
+    socket.addEventListener('message', event => {
+      if (!isCurrent()) return;
+      this.bumpLiveness(socket, isCurrent);
+      try {
+        const message = JSON.parse(event.data as string);
+        if (message.messageType !== 'data-sync' || message.data?.userKeyId !== this._config.user.keyId) return;
+        // The guard also rejects messages already queued when this connection is replaced.
+        const guarded = { ...message, isCurrent };
+        if (message.data.eventType === StreamResponseEventType.patch) this.emitter.emit('patch', guarded);
+        else if (message.data.eventType === StreamResponseEventType.full) this.emitter.emit('put', guarded);
+      } catch (error) {
+        this._config.logger.warn('Ignoring an invalid WebSocket message', error);
       }
     });
   }
 
   close() {
     this.closed = true;
-    clearTimeout(this.livenessTimer);
-    this.ws?.close(4003, 'The client is closed by user');
+    ++this.generation;
+    this.clearTimers();
+    const socket = this.ws;
     this.ws = undefined;
+    socket?.close(4003, 'The client is closed by user');
   }
 
   config(param: IWebSocketConfig) {
-    if (param.emitter) {
-      this.emitter = param.emitter;
-    }
-
-    this._config = {...param};
+    if (param.emitter) this.emitter = param.emitter;
+    this._config = { ...param, user: copyUser(param.user) };
   }
 
-  private bumpLiveness() {
+  private clearTimers() {
+    clearTimeout(this.livenessTimer);
+    clearTimeout(this.pingTimer);
+    clearTimeout(this.reconnectTimer);
+    this.livenessTimer = this.pingTimer = this.reconnectTimer = undefined;
+  }
+
+  private bumpLiveness(socket: WebSocket, isCurrent: () => boolean) {
     clearTimeout(this.livenessTimer);
     this.livenessTimer = setTimeout(() => {
+      if (!isCurrent()) return;
       this._config.logger.warn('no server activity within timeout, recycling socket');
-      this.ws?.close(); // triggers 'close' -> reconnect()
+      socket.close();
     }, this._config.pingInterval * 2);
   }
 
-  private sendPingMessage() {
-    const payload = {
-      messageType: 'ping',
-      data: null
-    };
-
-    setTimeout(() => {
+  private sendPingMessage(socket: WebSocket, isCurrent: () => boolean) {
+    clearTimeout(this.pingTimer);
+    this.pingTimer = setTimeout(() => {
+      if (!isCurrent() || socket.readyState !== WebSocket.OPEN) return;
       try {
-        if (this.ws?.readyState === WebSocket.OPEN) {
-          this._config.logger.debug('sending ping')
-          this.ws.send(JSON.stringify(payload));
-          this.sendPingMessage();
-        } else {
-          this._config.logger.debug(`socket closed at ${ new Date() }`);
-        }
-      } catch (err) {
-        this._config.logger.debug(err);
+        socket.send(JSON.stringify({ messageType: 'ping', data: null }));
+        this.sendPingMessage(socket, isCurrent);
+      } catch (error) {
+        this._config.logger.debug(error);
       }
     }, this._config.pingInterval);
   }
 
   private doDataSync(): boolean {
-    const payload = {
-      messageType: 'data-sync',
-      data: {
-        timestamp: this._config.getStoreTimestamp(),
-        user: this._config.user
-      }
-    };
-
     try {
-      if (this.ws?.readyState === WebSocket.OPEN) {
-        this._config.logger.debug('requesting data');
-        this.ws?.send(JSON.stringify(payload));
-        return true;
-      } else {
-        this._config.logger.error(`not requesting data because socket not open`);
-        return false;
-      }
-    } catch (err) {
-      this._config.logger.debug(err);
+      if (this.ws?.readyState !== WebSocket.OPEN) return false;
+      this.ws.send(JSON.stringify({
+        messageType: 'data-sync',
+        data: { timestamp: this._config.getStoreTimestamp(), user: this._config.user }
+      }));
+      return true;
+    } catch (error) {
+      this._config.logger.debug(error);
       return false;
     }
   }
 
-  private reconnect() {
-    if (!this.closed) {
-      this.ws = undefined;
-      const waitTime = socketConnectionIntervals[Math.min(this.retryCounter++, socketConnectionIntervals.length - 1)];
-      this._config.logger.info(`The client will try to reconnect in ${ waitTime } milliseconds.`);
-      setTimeout(() => {
-        this._config.logger.info(`The client is trying to reconnect, flag evaluation results may be stale until reconnected, waited for: ${ waitTime } milliseconds`);
-        this.connect();
-      }, waitTime);
-    }
+  private reconnect(generation: number) {
+    if (this.closed) return;
+    const waitTime = socketConnectionIntervals[Math.min(this.retryCounter++, socketConnectionIntervals.length - 1)];
+    this.reconnectTimer = setTimeout(() => {
+      if (!this.closed && generation === this.generation) this.connect();
+    }, waitTime);
   }
 }
 

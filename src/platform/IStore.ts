@@ -1,5 +1,5 @@
 import { IDataKind } from "../IDataKind";
-import { IKeyedStoreItem, IStoreDataStorage, IStoreItem, IStoreKindData } from "../store/store";
+import { IKeyedStoreItem, IStoreDataStorage, IStoreItem, IStoreKindData, IStoreUpdate } from "../store/store";
 import { IUser } from "../options/IUser";
 
 /**
@@ -79,10 +79,21 @@ export interface IStore {
    * @param data
    *   The contents of the entity, as an object that can be converted to JSON. The store
    *   should check the `version` property of this object, and should *not* overwrite any
-   *   existing data if the existing `version` is greater than or equal to that value.
+   *   existing data if the existing `version` is greater than that value. Equal versions
+   *   must be accepted because segment changes can reuse a flag's version.
    *   The actual type of this parameter is {@link IKeyedStoreItem}.
    */
   upsert(kind: IDataKind, data: IKeyedStoreItem): Promise<void>;
+
+  /**
+   * Add or update multiple items together, using the same version rules as upsert().
+   * Readers must see all accepted updates together, never a partially applied batch.
+   * If the store persists data, save once after applying the batch.
+   * The returned promise resolves when the batch and any persistence have completed.
+   *
+   * @param updates The items to add or update, each with its data kind and keyed data.
+   */
+  upsertBatch(updates: IStoreUpdate[]): Promise<void>;
 
   /**
    * Tests whether the store is initialized.

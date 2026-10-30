@@ -1,3 +1,5 @@
+import { IDataKind } from '../IDataKind';
+
 export const StoreStorageKey = 'fb-datastore';
 
 export const CurrentUserStorageKey = 'fb-user';
@@ -13,6 +15,7 @@ export enum StoreItemOriginEnum {
 export interface IStoreItem {
   version: number;
   origin: StoreItemOriginEnum,
+  deleted?: boolean;
 
   // The actual data associated with the item.
   [attribute: string]: any;
@@ -23,6 +26,11 @@ export interface IStoreItem {
  */
 export interface IKeyedStoreItem extends IStoreItem {
   key: string;
+}
+
+export interface IStoreUpdate {
+  kind: IDataKind;
+  data: IKeyedStoreItem;
 }
 
 /**

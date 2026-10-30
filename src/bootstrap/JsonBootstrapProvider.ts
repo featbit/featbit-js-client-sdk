@@ -18,18 +18,9 @@ export class JsonBootstrapProvider implements IBootstrapProvider {
     };
   }
 
-  populate(userKeyId: string, dataSourceUpdates: IDataSourceUpdates, callback?: () => void): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (isNullOrUndefined(this.dataSet)) {
-        return resolve();
-      }
-
-      const internalCallback = () => {
-        resolve();
-        callback?.();
-      }
-
-      dataSourceUpdates.init(userKeyId, this.dataSet!, internalCallback);
-    });
+  async populate(userKeyId: string, dataSourceUpdates: IDataSourceUpdates, callback?: () => void): Promise<void> {
+    if (!isNullOrUndefined(this.dataSet)) {
+      await dataSourceUpdates.init(userKeyId, this.dataSet!, callback);
+    }
   }
 }

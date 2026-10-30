@@ -17,36 +17,31 @@ const createPutListener = (
   },
 ) => ({
   deserializeData: deserializeAll,
-  processJson: async (userKeyId: string, {flags}: Flags) => {
+  processJson: async (userKeyId: string, {flags}: Flags, isCurrent = () => true) => {
+    if (!isCurrent()) return;
     const initData: IStoreDataStorage = {
       flags: flags,
       version: 0
     };
 
     logger?.debug('Initializing all data');
-    await dataSourceUpdates.init(userKeyId, initData, onPutCompleteHandler);
+    await dataSourceUpdates.init(userKeyId, initData, () => {
+      if (isCurrent()) onPutCompleteHandler();
+    }, isCurrent);
   },
 });
 
 const createPatchListener = (
   dataSourceUpdates: IDataSourceUpdates,
-  logger?: ILogger,
   onPatchCompleteHandler: VoidFunction = () => {
   },
 ) => ({
   deserializeData: deserializePatch,
-  processJson: async (userKeyId: string, data: IPatchData[]) => {
-    if (data?.length === 0) {
-      onPatchCompleteHandler?.();
-      return;
-    }
-
-    if (data?.length > 0) {
-      for(const item of data) {
-        logger?.debug(`Updating ${ item.data.key } in ${ item.kind.namespace }`);
-        await dataSourceUpdates.upsert(userKeyId, item.kind, item.data, onPatchCompleteHandler);
-      }
-    }
+  processJson: async (userKeyId: string, data: IPatchData[], isCurrent = () => true) => {
+    if (!isCurrent()) return;
+    await dataSourceUpdates.upsertBatch(userKeyId, data, () => {
+      if (isCurrent()) onPatchCompleteHandler();
+    }, isCurrent);
   },
 });
 
@@ -62,6 +57,6 @@ export const createStreamListeners = (
 ) => {
   const listeners = new Map<EventName, ProcessStreamResponse>();
   listeners.set('put', createPutListener(dataSourceUpdates, logger, onCompleteHandlers?.put));
-  listeners.set('patch', createPatchListener(dataSourceUpdates, logger, onCompleteHandlers?.patch));
+  listeners.set('patch', createPatchListener(dataSourceUpdates, onCompleteHandlers?.patch));
   return listeners;
 };

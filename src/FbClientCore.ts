@@ -28,6 +28,8 @@ import { IUser } from "./options/IUser";
 import { UserValidator } from "./options/Validators";
 import { FlagValue, VariationDataType } from "./evaluation";
 import { StoreItemOriginEnum } from "./store";
+import FullSyncPolicy from './data-sync/FullSyncPolicy';
+import { copyUser } from './utils/copyUser';
 
 enum ClientState {
   Initializing,
@@ -47,6 +49,12 @@ export interface IClientCallbacks {
 }
 
 export class FbClientCore implements IFbClientCore {
+  private readonly fullSync: FullSyncPolicy;
+  private setup: Promise<void>;
+  private contextGeneration = 0;
+  private contextChanging = false;
+  private closed = false;
+  private initializationTimer?: ReturnType<typeof setTimeout>;
   private state: ClientState = ClientState.Initializing;
 
   private store?: IStore;
@@ -98,20 +106,29 @@ export class FbClientCore implements IFbClientCore {
     }
 
     this.config = config;
+    this.fullSync = new FullSyncPolicy(config.fullSyncInterval);
+    this.config.user = copyUser(config.user);
     this.logger = config.logger;
 
-    this.init(onUpdate, hasEventListeners);
+    this.setup = this.init(onUpdate, hasEventListeners).catch(error => this.dataSourceErrorHandler(error));
   }
 
   private async init(onUpdate: (keys: string[]) => void, hasEventListeners: () => boolean) {
     const clientContext = new ClientContext(this.config.sdkKey, this.config, this.platform);
     this.store = this.config.storeFactory(clientContext);
+    this.dataSourceUpdates = new DataSourceUpdates(this.store, hasEventListeners, keys => {
+      if (!this.closed && !this.contextChanging) onUpdate(keys);
+    });
     await this.store.identify(this.config.user);
-    this.dataSourceUpdates = new DataSourceUpdates(this.store, hasEventListeners, onUpdate);
+    if (this.closed) return;
     this.evaluator = new Evaluator(this.store, this.logger);
 
-    // use bootstrap provider to populate store
-    await this.config.bootstrapProvider.populate(this.config.user.keyId, this.dataSourceUpdates);
+    // A restored snapshot, including an empty snapshot or archive markers, takes
+    // precedence over bootstrap just as it does when switching user contexts.
+    if (!this.store.initialized() && Object.keys(this.store.all(DataKinds.Flags)[0]).length === 0) {
+      await this.config.bootstrapProvider.populate(this.config.user.keyId, this.dataSourceUpdates);
+    }
+    if (this.closed) return;
 
     if (this.config.offline) {
       this.eventProcessor = new NullEventProcessor();
@@ -126,7 +143,7 @@ export class FbClientCore implements IFbClientCore {
       }
 
       const listeners = createStreamListeners(this.dataSourceUpdates, this.logger, {
-        put: () => this.initSuccess(),
+        put: () => { this.fullSync.committed(); this.initSuccess(); },
         patch: () => this.initSuccess()
       });
 
@@ -135,10 +152,12 @@ export class FbClientCore implements IFbClientCore {
         new Requestor(this.config.sdkKey, this.config, this.platform.info, this.platform.requests),
         () => this.store!.version,
         listeners,
+        this.fullSync,
         (e) => this.dataSourceErrorHandler(e),
       );
 
       const onWebSocketNetworkError = () => {
+        if (this.closed || this.contextChanging) return;
         this.logger?.warn('WebSocket connection failed on initial attempt, falling back to polling');
         this.dataSynchronizer?.stop();
         const pollSync = createPollingSync();
@@ -155,6 +174,7 @@ export class FbClientCore implements IFbClientCore {
           () => this.store!.version,
           listeners,
           this.config.webSocketPingInterval,
+          this.fullSync,
           this.config.enablePollingFallback ? onWebSocketNetworkError : undefined
         )
         : createPollingSync();
@@ -168,7 +188,7 @@ export class FbClientCore implements IFbClientCore {
       ) ?? dataSynchronizer;
     }
 
-    this.start();
+    if (!this.contextChanging) this.start();
   }
 
   async identify(user: IUser) {
@@ -180,32 +200,50 @@ export class FbClientCore implements IFbClientCore {
 
       return;
     }
+    if (this.closed) return;
+    const context = copyUser(user);
+    const generation = ++this.contextGeneration;
+    const isCurrent = () => !this.closed && generation === this.contextGeneration;
+    this.contextChanging = true;
+    this.fullSync.reset();
+    clearTimeout(this.initializationTimer);
+    this.initReject?.(new Error('Initialization superseded by Identify'));
+    this.initializedPromise = undefined;
+    this.initResolve = this.initReject = undefined;
+    this.rejectionReason = undefined;
+    this.state = ClientState.Initializing;
+    this.dataSourceUpdates?.invalidateContext();
+    this.dataSynchronizer?.stop();
+    await this.setup;
+    if (!isCurrent()) return;
 
+    this.dataSynchronizer?.stop();
     const [oldFlags, oldVersion] = this.store!.all(DataKinds.Flags);
-    const oldData = {
-      flags: {...oldFlags},
-      version: oldVersion
-    }
-
-    this.config.user = user;
-
-    await this.store!.identify(user);
-
+    const oldData = { flags: { ...oldFlags }, version: oldVersion };
+    this.config.user = context;
     try {
-      await this.dataSynchronizer!.identify(user);
-    } catch (_) {
-      this.logger?.error('dataSynchronizer unable to identify user.');
-    }
-
-    const [ newFlags, newVersion ] = this.store!.all(DataKinds.Flags);
-    const newData = {
-      flags: {...newFlags},
-      version: newVersion
-    }
-    if (Object.keys(newFlags).length === 0) {
-      await this.config.bootstrapProvider.populate(user.keyId, this.dataSourceUpdates!);
-    } else {
-      this.dataSourceUpdates?.checkUpdates(oldData, newData);
+      // Drain any previous commit before selecting the new store context.
+      await this.dataSourceUpdates!.identify(context);
+      if (!isCurrent()) return;
+      if (!this.store!.initialized() && Object.keys(this.store!.all(DataKinds.Flags)[0]).length === 0) {
+        await this.config.bootstrapProvider.populate(context.keyId, this.dataSourceUpdates!);
+      }
+      if (!isCurrent()) return;
+      this.contextChanging = false;
+      const [flags, version] = this.store!.all(DataKinds.Flags);
+      this.dataSourceUpdates!.checkUpdates(oldData, { flags, version });
+      if (!isCurrent()) return;
+      if (this.config.offline) {
+        this.initSuccess();
+      } else {
+        this.startInitializationTimer();
+        await this.dataSynchronizer!.identify(context);
+      }
+    } catch (error) {
+      if (isCurrent()) {
+        this.contextChanging = false;
+        this.dataSourceErrorHandler(error);
+      }
     }
   }
 
@@ -215,7 +253,14 @@ export class FbClientCore implements IFbClientCore {
     }
 
     this.dataSynchronizer!.start();
-    setTimeout(() => {
+    this.startInitializationTimer();
+  }
+
+  private startInitializationTimer() {
+    clearTimeout(this.initializationTimer);
+    const generation = this.contextGeneration;
+    this.initializationTimer = setTimeout(() => {
+      if (this.closed || generation !== this.contextGeneration) return;
       if (!this.initialized()) {
         const msg = `FbClient failed to start successfully within ${ this.config.startWaitTime } milliseconds. ` +
           'This error usually indicates a connection issue with FeatBit or an invalid sdkKey.' +
@@ -234,10 +279,11 @@ export class FbClientCore implements IFbClientCore {
   }
 
   initialized(): boolean {
-    return this.state === ClientState.Initialized;
+    return !this.closed && !this.contextChanging && this.state === ClientState.Initialized;
   }
 
   waitForInitialization(): Promise<IFbClientCore> {
+    if (this.closed) return Promise.reject(new Error('Client closed'));
     // An initialization promise is only created if someone is going to use that promise.
     // If we always created an initialization promise, and there was no call waitForInitialization
     // by the time the promise was rejected, then that would result in an unhandled promise
@@ -318,6 +364,7 @@ export class FbClientCore implements IFbClientCore {
   }
 
   getAllVariations(): Promise<IEvalDetail<string>[]> {
+    if (this.contextChanging || !this.evaluator) return Promise.resolve([]);
     const context = Context.fromUser(this.config.user);
     if (!context.valid) {
       const error = new ClientError(
@@ -338,9 +385,15 @@ export class FbClientCore implements IFbClientCore {
   }
 
   async close(): Promise<void> {
-    await this.eventProcessor!.close();
+    if (this.closed) return;
+    this.closed = true;
+    ++this.contextGeneration;
+    clearTimeout(this.initializationTimer);
+    this.dataSourceUpdates?.invalidateContext();
     this.dataSynchronizer?.close();
-    this.store!.close();
+    this.store?.close();
+    this.initReject?.(new Error('Client closed'));
+    await this.eventProcessor?.close();
   }
 
   track(eventName: string, metricValue?: number | undefined): void {
@@ -365,6 +418,9 @@ export class FbClientCore implements IFbClientCore {
     defaultValue: TValue,
     typeConverter?: (value: string) => IConvertResult<TValue>
   ): IEvalDetail<TValue> {
+    if (this.contextChanging || !this.evaluator) {
+      return { flagKey, kind: ReasonKinds.FlagNotFound, reason: 'User context is changing', value: defaultValue };
+    }
     const context = Context.fromUser(this.config.user);
     if (!context.valid) {
       const error = new ClientError(
@@ -427,6 +483,7 @@ export class FbClientCore implements IFbClientCore {
   }
 
   private dataSourceErrorHandler(e: any) {
+    if (this.closed || this.contextChanging) return;
     const error =
       e.code === 401 ? new Error('Authentication failed. Double check your SDK key.') : e;
 
@@ -441,10 +498,13 @@ export class FbClientCore implements IFbClientCore {
   }
 
   private initSuccess() {
+    if (this.closed || this.contextChanging) return;
     if (!this.initialized()) {
+      clearTimeout(this.initializationTimer);
       this.state = ClientState.Initialized;
       this.logger?.info('FbClient started successfully.');
       this.initResolve?.(this);
+      this.initResolve = this.initReject = undefined;
       this.onReady();
     }
   }

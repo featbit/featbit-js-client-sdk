@@ -1,13 +1,27 @@
 import { IDataSourceUpdates } from "../store/IDataSourceUpdates";
-import { IKeyedStoreItem, IStoreDataStorage, IStoreItem, StoreItemOriginEnum } from "../store/store";
+import { IKeyedStoreItem, IStoreDataStorage, IStoreItem, IStoreKindData, IStoreUpdate, StoreItemOriginEnum } from "../store/store";
 import { IStore } from "../platform/IStore";
 import { IDataKind } from "../IDataKind";
 import DataKinds from "../store/DataKinds";
+import { IUser } from '../options/IUser';
+import { copyUser } from '../utils/copyUser';
 
-/**
- * @internal
- */
+/** @internal */
 export default class DataSourceUpdates implements IDataSourceUpdates {
+  private pending: Promise<void> = Promise.resolve();
+  private generation = 0;
+
+  invalidateContext(): void {
+    ++this.generation;
+  }
+
+  identify(user: IUser): Promise<void> {
+    const generation = ++this.generation;
+    const context = copyUser(user);
+    return this.enqueue(async () => {
+      if (generation === this.generation) await this.store.identify(context);
+    });
+  }
 
   constructor(
     private readonly store: IStore,
@@ -16,111 +30,83 @@ export default class DataSourceUpdates implements IDataSourceUpdates {
   ) {
   }
 
-  async init(userKeyId: string, newData: IStoreDataStorage, callback?: () => void): Promise<void> {
-    if (userKeyId !== this.store.user.keyId) {
-      callback?.();
-      return;
-    }
+  private enqueue(operation: () => Promise<void>): Promise<void> {
+    const result = this.pending.then(operation);
+    // Report failure to the caller without blocking subsequent responses.
+    this.pending = result.catch(() => {});
+    return result;
+  }
 
-    const checkForChanges = this.hasEventListeners();
-    const doInit = async (oldData?: IStoreDataStorage) => {
-      // When init method is not run from local bootstrap and if bootstrap data is configured when starting the app and the server does not return those flags
-      // We should keep the local flags in the store as it is
-      const isRunFromLocal = Object.keys(newData.flags).some((key) => newData.flags[key].origin === StoreItemOriginEnum.Local);
-      if (!isRunFromLocal && oldData) {
-        const localOnlyFlags = Object.keys(oldData.flags).filter((key: string) => {
-          return oldData.flags[key] && !newData.flags[key] && oldData.flags[key].origin === StoreItemOriginEnum.Local;
-        }).reduce((acc: {[attribute: string]: any}, cur: string) => {
-          acc[cur] = oldData.flags[cur];
-          return acc;
-        }, {});
+  private visibleFlags(flags: IStoreKindData): IStoreKindData {
+    return Object.fromEntries(Object.entries(flags)
+      .filter(([, item]) => item && !item.deleted && item.matchReason !== 'flag archived')
+      .map(([key, item]) => [key, { ...item }]));
+  }
 
-        newData = { version: newData.version, flags: {...newData.flags, ...localOnlyFlags}};
+  private snapshot(): IStoreKindData {
+    return this.visibleFlags(this.store.all(DataKinds.Flags)[0]);
+  }
+
+  private notifyChanges(oldFlags: IStoreKindData, newFlags: IStoreKindData): void {
+    if (!this.hasEventListeners()) return;
+    const keys = new Set([...Object.keys(oldFlags), ...Object.keys(newFlags)]);
+    const changed = [...keys].filter(key => this.isUpdated(oldFlags[key], newFlags[key]));
+    if (changed.length > 0) this.onChange(changed);
+  }
+
+  init(userKeyId: string, newData: IStoreDataStorage, callback?: () => void, isCurrent = () => true): Promise<void> {
+    const generation = this.generation;
+    const flags = { ...newData.flags };
+    return this.enqueue(async () => {
+      if (generation !== this.generation || !isCurrent() || userKeyId !== this.store.user.keyId) {
+        return;
       }
 
-      await this.store.init(newData);
+      const oldFlags = this.snapshot();
+      const isLocal = Object.values(flags).some(item => item.origin === StoreItemOriginEnum.Local);
+      const localOnlyFlags = isLocal ? {} : Object.fromEntries(Object.entries(oldFlags)
+        .filter(([key, item]) => item.origin === StoreItemOriginEnum.Local &&
+          !Object.prototype.hasOwnProperty.call(flags, key)));
 
-      Promise.resolve().then(() => {
-        if (checkForChanges) {
-          const updatedKeys = Object.keys(newData)
-            .filter((key) => key !== 'version')
-            .flatMap((namespace) => {
-              const oldDataForKind = oldData?.[namespace] || {};
-              const newDataForKind = newData[namespace];
-              const mergedData = {...oldDataForKind, ...newDataForKind};
-              return Object.keys(mergedData)
-                .filter((key: string) => this.isUpdated(oldDataForKind && oldDataForKind[key], newDataForKind && newDataForKind[key]));
-            });
-          updatedKeys.length > 0 && this.onChange(updatedKeys);
-        }
-      });
-      callback?.();
-    };
-
-    const [flags, version] = this.store.all(DataKinds.Flags);
-    const oldData = {
-      flags,
-      version
-    };
-    await doInit(oldData);
+      // Only still-local values survive omission. A remote archive has already
+      // replaced the local value, so a later full response cannot resurrect it.
+      await this.store.init({ version: newData.version, flags: { ...localOnlyFlags, ...flags } });
+      if (generation !== this.generation || !isCurrent()) return;
+      this.notifyChanges(oldFlags, this.snapshot());
+      if (generation === this.generation && isCurrent()) callback?.();
+    });
   }
 
   checkUpdates(oldData: IStoreDataStorage, newData: IStoreDataStorage, callback?: () => void): void {
-    const checkForChanges = this.hasEventListeners();
-
-    if (!checkForChanges) {
-      return;
-    }
-
-    const updatedKeys = Object.keys(newData)
-    .filter((key) => key !== 'version')
-    .flatMap((namespace) => {
-      const oldDataForKind = oldData?.[namespace] || {};
-      const newDataForKind = newData[namespace];
-      const mergedData = {...oldDataForKind, ...newDataForKind};
-      return Object.keys(mergedData)
-      .filter((key: string) => this.isUpdated(oldDataForKind && oldDataForKind[key], newDataForKind && newDataForKind[key]));
-    });
-    updatedKeys.length > 0 && this.onChange(updatedKeys);
-
+    this.notifyChanges(this.visibleFlags(oldData.flags), this.visibleFlags(newData.flags));
     callback?.();
   }
 
-  async upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem, callback: () => void): Promise<void> {
-    if (userKeyId !== this.store.user.keyId) {
-      callback?.();
-      return;
-    }
+  upsert(userKeyId: string, kind: IDataKind, data: IKeyedStoreItem, callback: () => void): Promise<void> {
+    return this.upsertBatch(userKeyId, [{ kind, data }], callback);
+  }
 
-    const {key} = data;
-    const checkForChanges = this.hasEventListeners();
-    const doUpsert = async (oldItem?: IStoreItem) => {
-      await this.store.upsert(kind, data);
-      Promise.resolve().then(() => {
-        if (checkForChanges && this.isUpdated(oldItem, data)) {
-          this.onChange([key]);
-        }
-      });
+  upsertBatch(userKeyId: string, updates: IStoreUpdate[], callback?: () => void, isCurrent = () => true): Promise<void> {
+    const generation = this.generation;
+    const batch = updates.map(({ kind, data }) => ({ kind: { ...kind }, data: { ...data } }));
+    return this.enqueue(async () => {
+      if (generation !== this.generation || !isCurrent() || userKeyId !== this.store.user.keyId) {
+        return;
+      }
 
-      callback?.();
-    };
-    if (checkForChanges) {
-      const item = this.store.get(kind, key);
-      await doUpsert(item || undefined);
-    } else {
-      await doUpsert();
-    }
+      const oldFlags = this.snapshot();
+      await this.store.upsertBatch(batch);
+      if (generation !== this.generation || !isCurrent()) return;
+      this.notifyChanges(oldFlags, this.snapshot());
+      if (generation === this.generation && isCurrent()) callback?.();
+    });
   }
 
   private isUpdated(oldData?: IStoreItem, newData?: IStoreItem): boolean {
-    if (!oldData && !newData) {
-      return false;
-    }
-
-    if (!oldData || !newData) {
-      return true;
-    }
-
-    return newData.version >= oldData.version && newData.variation !== oldData.variation;
+    if (!oldData && !newData) return false;
+    if (!oldData || !newData) return true;
+    // Compare committed values, not incoming versions: full replacements may
+    // lower versions, and ignored patches must not generate update events.
+    return oldData.variation !== newData.variation || oldData.variationType !== newData.variationType;
   }
 }
