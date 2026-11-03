@@ -24,7 +24,6 @@ function flag(version: number, archived = false): IFlag {
     matchReason: archived ? 'flag archived' : 'default',
     variationOptions: [{ id: 1, value: 'true' }],
     variations: [{ id: 1, value: 'true' }],
-    sendToExperiment: true
   };
 }
 

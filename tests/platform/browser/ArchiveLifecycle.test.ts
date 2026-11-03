@@ -24,7 +24,7 @@ const user = { keyId: 'acceptance-user', name: 'Acceptance' };
 const flag = (id: string, timestamp: number, variation = 'enabled', archived = false) => ({
   id, timestamp, variation, variationType: 'string',
   matchReason: archived ? 'flag archived' : 'default',
-  variationOptions: [{ id: 1, value: variation }], sendToExperiment: true
+  variationOptions: [{ id: 1, value: variation }]
 });
 const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() };
 const flush = () => jest.advanceTimersByTimeAsync(0);
