@@ -35,6 +35,6 @@ export default class EvalResult {
     }
 
     const targetedVariation = this.value?.variations.find(v => v.value === this.value?.variation);
-    return new EvalEvent(user, this.value?.id!, targetedVariation!, this.value?.sendToExperiment!);
+    return new EvalEvent(user, this.value?.id!, targetedVariation!);
   }
 }

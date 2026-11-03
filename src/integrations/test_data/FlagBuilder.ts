@@ -8,7 +8,6 @@ export class FlagBuilder {
   private _version?: number;
   private _origin?: StoreItemOriginEnum;
   private _variationType: VariationDataType = VariationDataType.empty;
-  private _sendToExperiment: boolean = false;
   private _variation: FlagValue = '';
   private _variations: IVariation[] = [];
   private _matchReason: string = '';
@@ -30,11 +29,6 @@ export class FlagBuilder {
 
   origin(origin: StoreItemOriginEnum): FlagBuilder {
     this._origin = origin
-    return this;
-  }
-
-  sendToExperiment(val: boolean): FlagBuilder {
-    this._sendToExperiment = val
     return this;
   }
 
@@ -66,7 +60,6 @@ export class FlagBuilder {
       origin: this._origin!,
       variationType: this._variationType,
       variations: this._variations,
-      sendToExperiment: this._sendToExperiment,
       variation: this._variation,
       timestamp: new Date().getTime(),
       matchReason: this._matchReason,

@@ -19,7 +19,6 @@ export interface IFlagBase {
   id: string, // the key
   variation: FlagValue,
   variationType: VariationDataType,
-  sendToExperiment?: boolean,
   /** Whether evaluation insights are enabled. Defaults to true when omitted. */
   insightsEnabled?: boolean,
   timestamp?: number,

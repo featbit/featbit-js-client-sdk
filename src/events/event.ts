@@ -92,8 +92,7 @@ export class EvalEvent extends PayloadEvent {
   constructor(
     public user: IUser,
     public flagKey: string,
-    public variation: IVariation,
-    public sendToExperiment: boolean
+    public variation: IVariation
   ) {
     super();
   }
@@ -111,7 +110,6 @@ export class EvalEvent extends PayloadEvent {
       user: this.userPayload(),
       variations: [{
         featureFlagKey: this.flagKey,
-        sendToExperiment: this.sendToExperiment,
         timestamp: this.timestamp,
         variation: this.variation
       }]

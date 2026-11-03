@@ -1,6 +1,7 @@
 import { FbClientCore } from '../src/FbClientCore';
 import { DefaultEventProcessor } from '../src/events/DefaultEventProcessor';
 import { EvalEvent, MetricEvent } from '../src/events/event';
+import { DefaultEventSerializer } from '../src/events/DefaultEventSerializer';
 import { BrowserPlatform } from '../src/platform/browser/BrowserPlatform';
 import { IOptions } from '../src/options/IOptions';
 import { IFlag, VariationDataType } from '../src/evaluation/data/IFlag';
@@ -22,7 +23,7 @@ describe('evaluation insights', () => {
       variationOptions: [{ id: 0, value: 'true' }],
       variations: [{ id: 0, value: 'true' }],
       timestamp: 1, version: 1, origin: StoreItemOriginEnum.Remote,
-      matchReason: 'target match', sendToExperiment: true,
+      matchReason: 'target match',
       ...(insightsEnabled === undefined ? {} : { insightsEnabled }),
     };
   }
@@ -60,6 +61,25 @@ describe('evaluation insights', () => {
     if (enabled !== false) {
       expect(record).toHaveBeenCalledWith(expect.any(EvalEvent));
     }
+  });
+
+  it('ignores legacy experiment metadata in event payloads and deduplication', async () => {
+    const events: EvalEvent[] = [];
+    for (const legacy of [{}, { sendToExperiment: true }, { sendToExperiment: false }]) {
+      await store.init({ ...deserializeAll([{ ...flag(), ...legacy }]), version: 1 });
+      expect(client.boolVariation('flag', false)).toBe(true);
+      events.push(record.mock.calls[record.mock.calls.length - 1][0]);
+    }
+
+    const payloads = JSON.parse(new DefaultEventSerializer().serialize(events));
+    for (const payload of payloads) {
+      expect(payload.variations).toEqual([{
+        featureFlagKey: 'flag',
+        variation: { id: 0, value: 'true' },
+        timestamp: expect.any(Number),
+      }]);
+    }
+    expect(new Set(events.map(event => event.hash)).size).toBe(1);
   });
 
   it('applies changes to insightsEnabled from incremental data', async () => {
